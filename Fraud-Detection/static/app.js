@@ -98,16 +98,32 @@ function renderTransactions(transactions) {
 }
 
 function renderExplanation(alerts) {
-  const focus = alerts.slice(0, 3);
+  const prioritized = [
+    ...alerts.filter((alert) => alert.type === "transaction"),
+    ...alerts.filter((alert) => alert.type === "ring"),
+  ];
+  const focus = prioritized.slice(0, 3);
   explanationEl.innerHTML = focus.map((alert) => `
     <article class="explanation-card">
       <strong>${alert.alert_title || "Fraud evidence summary"}</strong>
-      <p>${alert.explanation}</p>
+      <p class="explanation-lead">${alert.explanation}</p>
+      <div class="score-stack">
+        ${(alert.why_flagged?.breakdown || []).map((item) => `
+          <div class="score-row">
+            <span>${item.label}</span>
+            <div class="score-bar"><span style="width:${Math.round((item.value || 0) * 100)}%"></span></div>
+            <strong>${pct(item.value || 0)}</strong>
+          </div>
+        `).join("")}
+      </div>
+      <p><strong>Decision:</strong> ${alert.why_flagged?.severity || alert.severity} / ${alert.why_flagged?.action || alert.action} at ${pct(alert.why_flagged?.final_risk || alert.final_risk || 0)}</p>
+      ${(alert.why_flagged?.top_rule_reasons || []).length ? `<p><strong>Rules:</strong> ${(alert.why_flagged.top_rule_reasons || []).join(" • ")}</p>` : ""}
+      ${(alert.why_flagged?.top_network_evidence || []).length ? `<p><strong>Network:</strong> ${(alert.why_flagged.top_network_evidence || []).join(" • ")}</p>` : ""}
     </article>
   `).join("") || `
     <article class="explanation-card">
-      <strong>Monitoring</strong>
-      <p>The model is waiting for enough unusual behavior to justify a plain-language alert.</p>
+      <strong>AI Explanation</strong>
+      <p class="explanation-lead">The model is waiting for enough unusual behavior to justify a plain-language alert.</p>
     </article>
   `;
 }
