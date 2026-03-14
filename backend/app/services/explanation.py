@@ -3,9 +3,11 @@ from __future__ import annotations
 import json
 import time
 from typing import Any
-from urllib import error, request
+from urllib import error
 
-from ..config import GEMINI_API_KEY, GEMINI_MODEL, GEMINI_TIMEOUT_SECONDS
+from openai import OpenAI
+
+from ..config import OPENAI_API_KEY, OPENAI_BASE_URL, OPENAI_MODEL
 from ..models import ExplanationResponse, TransactionChatResponse
 
 
@@ -13,6 +15,11 @@ class ExplanationService:
     def __init__(self) -> None:
         self._cache: dict[str, tuple[float, dict[str, Any]]] = {}
         self._cache_ttl_seconds = 600.0
+        self._client = (
+            OpenAI(api_key=OPENAI_API_KEY, base_url=OPENAI_BASE_URL)
+            if OPENAI_API_KEY
+            else None
+        )
 
     @staticmethod
     def _extract_json_object(text: str) -> dict[str, Any]:
@@ -48,7 +55,7 @@ class ExplanationService:
         fallback_bullets: list[str],
         fallback_action: str,
     ) -> ExplanationResponse:
-        if not GEMINI_API_KEY:
+        if not self._client:
             return ExplanationResponse(
                 explanation=fallback_explanation,
                 bullets=fallback_bullets[:2],
@@ -61,58 +68,40 @@ class ExplanationService:
         if cached:
             return ExplanationResponse(**cached)
 
-        prompt = (
+        system_prompt = (
             "You are a bank fraud analyst copilot. "
             "Return JSON only with keys explanation, bullets, action. "
             "Rules: explanation max 50 words, max 2 bullets, do not invent facts, "
             "and keep the action aligned with the provided decision. "
-            "Do not add any prose before or after the JSON.\n\n"
-            f"Input:\n{json.dumps(payload, indent=2)}"
+            "Do not add any prose before or after the JSON."
         )
-
-        body = {
-            "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": {
-                "temperature": 0.2,
-                "maxOutputTokens": 320,
-                "responseMimeType": "application/json",
-                "thinkingConfig": {"thinkingBudget": 0},
-            },
-        }
-        endpoint = (
-            f"https://generativelanguage.googleapis.com/v1beta/models/"
-            f"{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
-        )
-
-        req = request.Request(
-            endpoint,
-            data=json.dumps(body).encode("utf-8"),
-            headers={"Content-Type": "application/json"},
-        )
-
+        user_prompt = f"Input:\n{json.dumps(payload, indent=2)}"
         try:
-            with request.urlopen(req, timeout=GEMINI_TIMEOUT_SECONDS) as response:
-                raw = json.loads(response.read().decode("utf-8"))
-            candidate_text = (
-                raw["candidates"][0]["content"]["parts"][0]["text"]
-                if raw.get("candidates")
-                else ""
+            response = self._client.chat.completions.create(
+                model=OPENAI_MODEL,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                temperature=0.2,
+                max_tokens=320,
             )
+            candidate_text = response.choices[0].message.content or ""
             parsed = self._extract_json_object(candidate_text)
             explanation = str(parsed.get("explanation", "")).strip()[:280]
             bullets = [str(item).strip() for item in parsed.get("bullets", []) if str(item).strip()]
             action = str(parsed.get("action", fallback_action)).strip()
             if not explanation:
-                raise ValueError("Gemini response missing explanation.")
+                raise ValueError("OpenAI response missing explanation.")
             result = ExplanationResponse(
                 explanation=explanation,
                 bullets=bullets[:2] or fallback_bullets[:2],
                 action=action or fallback_action,
-                mode="gemini",
+                mode="openai",
             )
             self._set_cache(cache_key, result.model_dump())
             return result
-        except (error.URLError, TimeoutError, ValueError, KeyError, json.JSONDecodeError):
+        except (error.URLError, TimeoutError, ValueError, KeyError, json.JSONDecodeError, IndexError):
             return ExplanationResponse(
                 explanation=fallback_explanation,
                 bullets=fallback_bullets[:2],
@@ -128,7 +117,7 @@ class ExplanationService:
         fallback_answer: str,
         fallback_follow_ups: list[str],
     ) -> TransactionChatResponse:
-        if not GEMINI_API_KEY:
+        if not self._client:
             return TransactionChatResponse(
                 answer=fallback_answer,
                 follow_ups=fallback_follow_ups[:2],
@@ -141,46 +130,30 @@ class ExplanationService:
             return TransactionChatResponse(**cached)
 
         trimmed_history = history[-6:]
-        prompt = (
+        system_prompt = (
             "You are Sentinel Chat, a banking fraud analyst assistant. "
             "Answer only from the provided transaction context and conversation history. "
             "Do not invent signals, policies, or data. "
             "Keep the answer under 120 words. "
             "Return JSON only with keys answer and follow_ups. "
-            "follow_ups must contain at most 2 short suggested questions.\n\n"
+            "follow_ups must contain at most 2 short suggested questions."
+        )
+        user_prompt = (
             f"Transaction context:\n{json.dumps(transaction_context, indent=2)}\n\n"
             f"Conversation history:\n{json.dumps(trimmed_history, indent=2)}\n\n"
             f"User question:\n{message}"
         )
-
-        body = {
-            "contents": [{"parts": [{"text": prompt}]}],
-            "generationConfig": {
-                "temperature": 0.2,
-                "maxOutputTokens": 220,
-                "responseMimeType": "application/json",
-                "thinkingConfig": {"thinkingBudget": 0},
-            },
-        }
-        endpoint = (
-            f"https://generativelanguage.googleapis.com/v1beta/models/"
-            f"{GEMINI_MODEL}:generateContent?key={GEMINI_API_KEY}"
-        )
-
-        req = request.Request(
-            endpoint,
-            data=json.dumps(body).encode("utf-8"),
-            headers={"Content-Type": "application/json"},
-        )
-
         try:
-            with request.urlopen(req, timeout=GEMINI_TIMEOUT_SECONDS) as response:
-                raw = json.loads(response.read().decode("utf-8"))
-            candidate_text = (
-                raw["candidates"][0]["content"]["parts"][0]["text"]
-                if raw.get("candidates")
-                else ""
+            response = self._client.chat.completions.create(
+                model=OPENAI_MODEL,
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
+                ],
+                temperature=0.2,
+                max_tokens=220,
             )
+            candidate_text = response.choices[0].message.content or ""
             parsed = self._extract_json_object(candidate_text)
             answer = str(parsed.get("answer", "")).strip()
             follow_ups = [
@@ -189,15 +162,15 @@ class ExplanationService:
                 if str(item).strip()
             ]
             if not answer:
-                raise ValueError("Gemini response missing answer.")
+                raise ValueError("OpenAI response missing answer.")
             result = TransactionChatResponse(
                 answer=answer[:800],
                 follow_ups=follow_ups[:2] or fallback_follow_ups[:2],
-                mode="gemini",
+                mode="openai",
             )
             self._set_cache(cache_key, result.model_dump())
             return result
-        except (error.URLError, TimeoutError, ValueError, KeyError, json.JSONDecodeError):
+        except (error.URLError, TimeoutError, ValueError, KeyError, json.JSONDecodeError, IndexError):
             return TransactionChatResponse(
                 answer=fallback_answer,
                 follow_ups=fallback_follow_ups[:2],

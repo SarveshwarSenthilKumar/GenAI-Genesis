@@ -222,8 +222,8 @@ class SentinelService:
             network_anomalies=network_reasons,
             behavior_signals=behavior_signals,
             graph_signals=graph_signals,
-            gemini_explanation=explanation.explanation,
-            gemini_summary_bullets=explanation.bullets,
+            openai_explanation=explanation.explanation,
+            openai_summary_bullets=explanation.bullets,
             recommended_action=explanation.action,
             ai_mode=explanation.mode,
         )

@@ -9,6 +9,7 @@ export function AppShellHeader() {
   const isLanding = pathname === "/";
   const isQueue = pathname === "/dashboard";
   const isLive = pathname === "/live";
+  const isDocumentation = pathname === "/documentation";
 
   if (isLanding) {
     return null;
@@ -39,6 +40,14 @@ export function AppShellHeader() {
             className="rounded-full border border-line bg-canvas/70 px-4 py-2 text-ink transition hover:bg-paper"
           >
             Live Monitor
+          </Link>
+        )}
+        {!isDocumentation && (
+          <Link
+            href="/documentation"
+            className="rounded-full border border-line bg-canvas/70 px-4 py-2 text-ink transition hover:bg-paper"
+          >
+            Documentation
           </Link>
         )}
         <ThemeToggle />

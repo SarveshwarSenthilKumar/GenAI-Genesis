@@ -251,6 +251,8 @@ class IncidentService:
             summary=alert.explanation,
             generated_at=self._generated_at(alert),
             type=alert.type,
+            manually_injected=alert.manually_injected,
+            injected_scenario=alert.injected_scenario,
         )
 
     def _incident_id(self, alert) -> str:

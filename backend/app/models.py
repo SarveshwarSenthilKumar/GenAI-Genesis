@@ -74,10 +74,10 @@ class ScoredTransaction(BaseModel):
     network_anomalies: list[str]
     behavior_signals: BehaviorSignals
     graph_signals: GraphSignals
-    gemini_explanation: str
-    gemini_summary_bullets: list[str]
+    openai_explanation: str
+    openai_summary_bullets: list[str]
     recommended_action: str
-    ai_mode: Literal["gemini", "fallback"]
+    ai_mode: Literal["openai", "fallback"]
 
 
 class BehaviorProfile(BaseModel):
@@ -112,7 +112,7 @@ class ExplanationResponse(BaseModel):
     explanation: str
     bullets: list[str]
     action: str
-    mode: Literal["gemini", "fallback"] = "fallback"
+    mode: Literal["openai", "fallback"] = "fallback"
 
 
 class ChatMessage(BaseModel):
@@ -128,7 +128,7 @@ class TransactionChatRequest(BaseModel):
 class TransactionChatResponse(BaseModel):
     answer: str
     follow_ups: list[str] = Field(default_factory=list)
-    mode: Literal["gemini", "fallback"] = "fallback"
+    mode: Literal["openai", "fallback"] = "fallback"
 
 
 class LiveMonitorStats(BaseModel):
@@ -182,6 +182,8 @@ class LiveMonitorAlert(BaseModel):
     network_evidence: list[str] = Field(default_factory=list)
     accounts_involved: list[str] = Field(default_factory=list)
     suspicious_funds_total: float | None = None
+    manually_injected: bool = False
+    injected_scenario: str | None = None
     why_flagged: LiveMonitorWhyFlagged
     explanation: str
 
@@ -225,6 +227,7 @@ class LiveMonitorGraph(BaseModel):
 
 class LiveMonitorPayload(BaseModel):
     generated_at: str | None = None
+    active_scenario: str | None = None
     stats: LiveMonitorStats
     transactions: list[LiveMonitorTransactionRow] = Field(default_factory=list)
     alerts: list[LiveMonitorAlert] = Field(default_factory=list)
@@ -254,6 +257,8 @@ class IncidentQueueItem(BaseModel):
     summary: str
     generated_at: str
     type: LiveAlertType
+    manually_injected: bool = False
+    injected_scenario: str | None = None
 
 
 class IncidentQueueResponse(BaseModel):
@@ -278,7 +283,7 @@ class IncidentPanelResponse(BaseModel):
     explanation: str
     summary_bullets: list[str] = Field(default_factory=list)
     recommended_action: str
-    ai_mode: Literal["gemini", "fallback"] = "fallback"
+    ai_mode: Literal["openai", "fallback"] = "fallback"
 
 
 class IncidentBehaviorProfile(BaseModel):
@@ -312,11 +317,11 @@ class IncidentDetailResponse(BaseModel):
     explanation: str
     summary_bullets: list[str] = Field(default_factory=list)
     recommended_action: str
-    ai_mode: Literal["gemini", "fallback"] = "fallback"
+    ai_mode: Literal["openai", "fallback"] = "fallback"
     behavior_profile: IncidentBehaviorProfile
 
 
 class IncidentChatResponse(BaseModel):
     answer: str
     follow_ups: list[str] = Field(default_factory=list)
-    mode: Literal["gemini", "fallback"] = "fallback"
+    mode: Literal["openai", "fallback"] = "fallback"
