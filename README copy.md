@@ -1,6 +1,6 @@
-# Sentinel
+# GENAI GENESIS
 
-Sentinel is a demo-first fraud analyst console for hackathon judging. It fuses transaction anomaly, behavioral identity mismatch, and network intelligence to flag suspicious transfers in real time.
+This project (Sentinel) is a demo-first fraud analyst console for hackathon judging. It fuses transaction anomaly, behavioral identity mismatch, and network intelligence to flag suspicious transfers in real time.
 
 ## Stack
 
