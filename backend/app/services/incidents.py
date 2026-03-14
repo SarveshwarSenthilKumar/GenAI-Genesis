@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime
 from difflib import SequenceMatcher
 from typing import Any
 
@@ -135,10 +136,10 @@ class IncidentService:
             for tx in snapshot.enriched
             if tx["sender_account"] in focus_accounts
             or tx["receiver_account"] in focus_accounts
-        ][-18:]
+        ][-14:]
 
         nodes: dict[str, dict[str, Any]] = {}
-        edges: list[dict[str, Any]] = []
+        edges_by_id: dict[str, dict[str, Any]] = {}
         highlighted_nodes = set(focus_accounts)
         highlighted_edges: list[str] = []
 
@@ -161,23 +162,26 @@ class IncidentService:
             )
 
             edge_id = f"{sender}->{receiver}"
-            classes = "highlighted" if sender in focus_accounts or receiver in focus_accounts else ""
-            if classes:
+            classes = self._graph_edge_classes(sender, receiver, focus_accounts)
+            if classes == "highlighted":
                 highlighted_edges.append(edge_id)
-            edges.append(
-                {
-                    "data": {
-                        "id": edge_id,
-                        "source": sender,
-                        "target": receiver,
-                        "label": f"${tx['amount']:,.0f}",
-                    },
-                    "classes": classes,
-                }
-            )
+            existing = edges_by_id.get(edge_id)
+            if existing and float(existing["data"]["amount"]) >= tx["amount"]:
+                continue
+            edges_by_id[edge_id] = {
+                "data": {
+                    "id": edge_id,
+                    "source": sender,
+                    "target": receiver,
+                    "label": f"${tx['amount']:,.0f}",
+                    "amount": f"{tx['amount']:.2f}",
+                },
+                "classes": classes,
+            }
 
         recipient_fan_in = sum(1 for tx in relevant if tx["receiver_account"] == alert.receiver_account)
         recipient_fan_out = sum(1 for tx in relevant if tx["sender_account"] == alert.receiver_account)
+        edges = list(edges_by_id.values())
 
         return GraphResponse(
             transaction_id=incident_id,
@@ -401,7 +405,7 @@ class IncidentService:
 
     def _timeline_label(self, alert) -> str:
         alert_type = "Network exposure" if alert.type == "ring" else "Payment anomaly"
-        return f"{alert_type} · {self._generated_at(alert)}"
+        return f"{alert_type} · {self._format_timestamp(self._generated_at(alert))}"
 
     def _generated_at(self, alert) -> str:
         incident_id = self._incident_id(alert)
@@ -425,6 +429,15 @@ class IncidentService:
 
         return snapshot.payload.generated_at or ""
 
+    def _format_timestamp(self, timestamp: str) -> str:
+        if not timestamp:
+            return "Unknown time"
+        try:
+            parsed = datetime.fromisoformat(timestamp)
+        except ValueError:
+            return timestamp
+        return parsed.strftime("%b %d, %Y, %I:%M:%S %p")
+
     def _action_copy(self, action: str) -> str:
         mapping = {
             "allow": "Allow and monitor",
@@ -441,6 +454,15 @@ class IncidentService:
         if node_id.startswith("MULE") or node_id.startswith("CASH"):
             classes.append("suspicious")
         return " ".join(classes)
+
+    def _graph_edge_classes(
+        self, sender: str, receiver: str, focus_accounts: set[str]
+    ) -> str:
+        if sender in focus_accounts and receiver in focus_accounts:
+            return "highlighted"
+        if sender in focus_accounts or receiver in focus_accounts:
+            return "branch"
+        return ""
 
     def _combine_unique(self, *groups: list[str]) -> list[str]:
         seen: list[str] = []

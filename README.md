@@ -56,9 +56,25 @@ npm run dev
 
 Frontend runs on `http://127.0.0.1:3000`.
 
+If hot reload gets stuck after route or component changes, use:
+
+```bash
+cd frontend
+npm run dev:fresh
+```
+
+Useful frontend scripts:
+
+- `npm run dev` for the normal live-reloading dev server
+- `npm run dev:fresh` to clear `.next` and start a clean dev server
+- `npm run reset` to clear `.next` without starting the server
+- `npm run build` for a production build check
+- `npm run start` to serve the production build
+
 Main app pages:
 
-- Dashboard: `http://127.0.0.1:3000`
+- Landing: `http://127.0.0.1:3000`
+- Dashboard: `http://127.0.0.1:3000/dashboard`
 - Live monitor: `http://127.0.0.1:3000/live`
 - Example case: `http://127.0.0.1:3000/cases/tx_blocked_001`
 - Example graph: `http://127.0.0.1:3000/cases/tx_blocked_001/graph`
