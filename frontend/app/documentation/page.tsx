@@ -1024,33 +1024,6 @@ function VisualizationSection() {
             </div>
           </div>
         </div>
-
-        {/* Dashboard Metrics */}
-        <div className="mt-8">
-          <h3 className="text-2xl font-bold mb-4 text-slate-900 dark:text-slate-100">Live Dashboard Metrics</h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-              <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">1,247</div>
-              <div className="text-sm text-slate-600 dark:text-slate-400">Transactions/Min</div>
-            </div>
-            
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-              <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">98.7%</div>
-              <div className="text-sm text-slate-600 dark:text-slate-400">Detection Accuracy</div>
-            </div>
-            
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-              <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">23ms</div>
-              <div className="text-sm text-slate-600 dark:text-slate-400">Avg Latency</div>
-            </div>
-            
-            <div className="bg-slate-50 dark:bg-slate-900 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
-              <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">47</div>
-              <div className="text-sm text-slate-600 dark:text-slate-400">Active Alerts</div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

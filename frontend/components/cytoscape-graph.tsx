@@ -82,30 +82,30 @@ export function CytoscapeGraph({ graph }: CytoscapeGraphProps) {
     {
       selector: ".recipient",
       style: {
-        "background-color": "#f59e0b",
-        "border-color": "#d97706",
+        "background-color": "#64748b",
+        "border-color": "#475569",
         color: "#ffffff",
-        "text-outline-color": "#f59e0b",
+        "text-outline-color": "#64748b",
         "text-outline-width": 2,
       },
     },
     {
       selector: ".safe",
       style: {
-        "background-color": "#10b981",
-        "border-color": "#059669",
+        "background-color": "#64748b",
+        "border-color": "#475569",
         color: "#ffffff",
-        "text-outline-color": "#10b981",
+        "text-outline-color": "#64748b",
         "text-outline-width": 2,
       },
     },
     {
       selector: ".suspicious",
       style: {
-        "background-color": "#ef4444",
-        "border-color": "#dc2626",
+        "background-color": "#475569",
+        "border-color": "#334155",
         color: "#ffffff",
-        "text-outline-color": "#ef4444",
+        "text-outline-color": "#475569",
         "text-outline-width": 2,
       },
     },
@@ -113,10 +113,10 @@ export function CytoscapeGraph({ graph }: CytoscapeGraphProps) {
       selector: ".cashout",
       style: {
         shape: "diamond",
-        "background-color": "#7c3aed",
-        "border-color": "#6d28d9",
+        "background-color": "#334155",
+        "border-color": "#1e293b",
         color: "#ffffff",
-        "text-outline-color": "#7c3aed",
+        "text-outline-color": "#334155",
         "text-outline-width": 2,
       },
     },
@@ -124,25 +124,25 @@ export function CytoscapeGraph({ graph }: CytoscapeGraphProps) {
       selector: "node.highlighted",
       style: {
         "border-width": "4px",
-        "border-color": "#ef4444",
+        "border-color": "#475569",
         "overlay-opacity": 0,
-        "box-shadow": "0 0 12px rgba(239, 68, 68, 0.4)",
+        "box-shadow": "0 0 12px rgba(71, 85, 105, 0.4)",
       },
     },
     {
       selector: "edge.highlighted",
       style: {
         width: "5px",
-        "line-color": "#ef4444",
-        "target-arrow-color": "#ef4444",
+        "line-color": "#475569",
+        "target-arrow-color": "#475569",
       },
     },
     {
       selector: "edge.branch",
       style: {
         width: "4px",
-        "line-color": "#f59e0b",
-        "target-arrow-color": "#f59e0b",
+        "line-color": "#64748b",
+        "target-arrow-color": "#64748b",
       },
     },
     {
@@ -210,30 +210,30 @@ export function CytoscapeGraph({ graph }: CytoscapeGraphProps) {
     {
       selector: ".recipient",
       style: {
-        "background-color": "#f59e0b",
-        "border-color": "#d97706",
+        "background-color": "#94a3b8",
+        "border-color": "#64748b",
         color: "#f8fafc",
-        "text-outline-color": "#f59e0b",
+        "text-outline-color": "#94a3b8",
         "text-outline-width": 2,
       },
     },
     {
       selector: ".safe",
       style: {
-        "background-color": "#10b981",
-        "border-color": "#059669",
+        "background-color": "#94a3b8",
+        "border-color": "#64748b",
         color: "#f8fafc",
-        "text-outline-color": "#10b981",
+        "text-outline-color": "#94a3b8",
         "text-outline-width": 2,
       },
     },
     {
       selector: ".suspicious",
       style: {
-        "background-color": "#ef4444",
-        "border-color": "#dc2626",
+        "background-color": "#64748b",
+        "border-color": "#475569",
         color: "#f8fafc",
-        "text-outline-color": "#ef4444",
+        "text-outline-color": "#64748b",
         "text-outline-width": 2,
       },
     },
@@ -241,10 +241,10 @@ export function CytoscapeGraph({ graph }: CytoscapeGraphProps) {
       selector: ".cashout",
       style: {
         shape: "diamond",
-        "background-color": "#7c3aed",
-        "border-color": "#6d28d9",
+        "background-color": "#475569",
+        "border-color": "#334155",
         color: "#f8fafc",
-        "text-outline-color": "#7c3aed",
+        "text-outline-color": "#475569",
         "text-outline-width": 2,
       },
     },
@@ -252,25 +252,25 @@ export function CytoscapeGraph({ graph }: CytoscapeGraphProps) {
       selector: "node.highlighted",
       style: {
         "border-width": "4px",
-        "border-color": "#ef4444",
+        "border-color": "#64748b",
         "overlay-opacity": 0,
-        "box-shadow": "0 0 12px rgba(239, 68, 68, 0.6)",
+        "box-shadow": "0 0 12px rgba(100, 163, 184, 0.6)",
       },
     },
     {
       selector: "edge.highlighted",
       style: {
         width: "5px",
-        "line-color": "#ef4444",
-        "target-arrow-color": "#ef4444",
+        "line-color": "#64748b",
+        "target-arrow-color": "#64748b",
       },
     },
     {
       selector: "edge.branch",
       style: {
         width: "4px",
-        "line-color": "#f59e0b",
-        "target-arrow-color": "#f59e0b",
+        "line-color": "#94a3b8",
+        "target-arrow-color": "#94a3b8",
       },
     },
     {
@@ -315,10 +315,10 @@ export function CytoscapeGraph({ graph }: CytoscapeGraphProps) {
 
   return (
     <div className="relative">
-      <div ref={containerRef} className="h-[520px] w-full rounded-[24px] bg-[#fffdf9] dark:bg-[#1e293b]" />
+      <div ref={containerRef} className="h-[520px] w-full rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700" />
       <button
         onClick={handleRefocus}
-        className="absolute top-4 right-4 flex h-9 w-9 items-center justify-center rounded-full border border-line bg-canvas/70 text-ink transition-colors hover:bg-paper dark:bg-surface/70 dark:text-ink dark:hover:bg-surface"
+        className="absolute top-4 right-4 flex h-9 w-9 items-center justify-center rounded-lg border border-slate-300 dark:border-slate-600 bg-white/70 dark:bg-slate-800/70 text-slate-600 dark:text-slate-400 transition-colors hover:bg-slate-100 dark:hover:bg-slate-700"
         aria-label="Refocus graph"
         title="Refocus graph"
       >
