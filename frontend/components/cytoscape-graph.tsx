@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import cytoscape from "cytoscape";
+import { Maximize2 } from "lucide-react";
 import { useTheme } from "next-themes";
 
 import type { GraphResponse } from "@/lib/types";
@@ -12,7 +13,14 @@ type CytoscapeGraphProps = {
 
 export function CytoscapeGraph({ graph }: CytoscapeGraphProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const cytoscapeRef = useRef<any>(null);
   const { resolvedTheme } = useTheme();
+
+  const handleRefocus = () => {
+    if (cytoscapeRef.current) {
+      cytoscapeRef.current.fit(undefined, 50);
+    }
+  };
 
   const getLightStyles = () => [
     {
@@ -272,10 +280,24 @@ export function CytoscapeGraph({ graph }: CytoscapeGraphProps) {
       style: styles as any,
     });
 
+    cytoscapeRef.current = instance;
+
     return () => {
       instance.destroy();
     };
   }, [graph, resolvedTheme]);
 
-  return <div ref={containerRef} className="h-[520px] w-full rounded-[24px] bg-[#fffdf9] dark:bg-[#1e293b]" />;
+  return (
+    <div className="relative">
+      <div ref={containerRef} className="h-[520px] w-full rounded-[24px] bg-[#fffdf9] dark:bg-[#1e293b]" />
+      <button
+        onClick={handleRefocus}
+        className="absolute top-4 right-4 flex h-9 w-9 items-center justify-center rounded-full border border-line bg-canvas/70 text-ink transition-colors hover:bg-paper dark:bg-surface/70 dark:text-ink dark:hover:bg-surface"
+        aria-label="Refocus graph"
+        title="Refocus graph"
+      >
+        <Maximize2 className="h-4 w-4" />
+      </button>
+    </div>
+  );
 }
