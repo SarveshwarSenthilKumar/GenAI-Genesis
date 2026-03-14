@@ -1,15 +1,17 @@
 from __future__ import annotations
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import FRONTEND_ORIGINS
 from .models import (
     ExplanationRequest,
     ExplanationResponse,
+    LiveMonitorPayload,
     TransactionChatRequest,
     TransactionChatResponse,
 )
+from .services.live_monitor import live_monitor_service
 from .services.sentinel import service
 
 
@@ -36,6 +38,16 @@ def dashboard_summary():
 @app.get("/api/transactions/feed")
 def transactions_feed():
     return service.get_dashboard_summary().cases
+
+
+@app.get("/api/live/bootstrap", response_model=LiveMonitorPayload)
+def live_monitor_bootstrap():
+    return live_monitor_service.bootstrap()
+
+
+@app.get("/api/live/stream", response_model=LiveMonitorPayload)
+def live_monitor_stream(batch: int = Query(default=6, ge=1, le=12)):
+    return live_monitor_service.stream(batch_size=batch)
 
 
 @app.get("/api/transactions/{transaction_id}")

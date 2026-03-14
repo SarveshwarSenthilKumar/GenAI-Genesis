@@ -6,6 +6,8 @@ from pydantic import BaseModel, Field
 
 
 Decision = Literal["approve", "review", "block"]
+LiveAction = Literal["allow", "review", "hold", "block"]
+LiveAlertType = Literal["transaction", "ring"]
 
 
 class RiskDistributionItem(BaseModel):
@@ -127,3 +129,103 @@ class TransactionChatResponse(BaseModel):
     answer: str
     follow_ups: list[str] = Field(default_factory=list)
     mode: Literal["gemini", "fallback"] = "fallback"
+
+
+class LiveMonitorStats(BaseModel):
+    transactions_monitored: int
+    flagged_alerts: int
+    suspicious_volume: float
+    ring_clusters: int
+    rules_triggered: int
+    hot_country: str
+    blocked_count: int
+    held_count: int
+    review_count: int
+    allow_count: int
+    transaction_scoring_latency_ms: float
+    graph_update_latency_ms: float
+    total_latency_ms: float
+
+
+class LiveMonitorBreakdownItem(BaseModel):
+    label: str
+    value: float
+
+
+class LiveMonitorWhyFlagged(BaseModel):
+    transaction_anomaly_score: float
+    rule_score: float
+    network_risk_score: float
+    final_risk: float
+    severity: str
+    action: LiveAction
+    breakdown: list[LiveMonitorBreakdownItem] = Field(default_factory=list)
+    top_rule_reasons: list[str] = Field(default_factory=list)
+    top_network_evidence: list[str] = Field(default_factory=list)
+
+
+class LiveMonitorAlert(BaseModel):
+    type: LiveAlertType
+    alert_title: str
+    transaction_id: str | None = None
+    cluster_id: str | None = None
+    sender_account: str | None = None
+    receiver_account: str | None = None
+    amount: float
+    severity: str
+    action: LiveAction
+    final_risk: float
+    transaction_anomaly_score: float = 0.0
+    rule_score: float = 0.0
+    network_risk_score: float = 0.0
+    rule_reasons: list[str] = Field(default_factory=list)
+    network_evidence: list[str] = Field(default_factory=list)
+    accounts_involved: list[str] = Field(default_factory=list)
+    suspicious_funds_total: float | None = None
+    why_flagged: LiveMonitorWhyFlagged
+    explanation: str
+
+
+class LiveMonitorTransactionRow(BaseModel):
+    transaction_id: str
+    timestamp: str
+    sender_account: str
+    receiver_account: str
+    amount: float
+    ip_country: str
+    sender_txn_count_5m: int
+    transaction_anomaly_score: float
+    rule_score: float
+    network_risk_score: float
+    final_risk: float
+    severity: str
+    action: LiveAction
+    transaction_type: str
+
+
+class LiveMonitorGraphNode(BaseModel):
+    id: str
+    label: str
+    kind: str
+    risk: float
+
+
+class LiveMonitorGraphEdge(BaseModel):
+    source: str
+    target: str
+    amount: float
+    risk: float
+    label: str
+
+
+class LiveMonitorGraph(BaseModel):
+    nodes: list[LiveMonitorGraphNode] = Field(default_factory=list)
+    edges: list[LiveMonitorGraphEdge] = Field(default_factory=list)
+
+
+class LiveMonitorPayload(BaseModel):
+    generated_at: str | None = None
+    stats: LiveMonitorStats
+    transactions: list[LiveMonitorTransactionRow] = Field(default_factory=list)
+    alerts: list[LiveMonitorAlert] = Field(default_factory=list)
+    graph: LiveMonitorGraph

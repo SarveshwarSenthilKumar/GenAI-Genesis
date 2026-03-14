@@ -1,3 +1,4 @@
+from app.services.live_monitor import LiveMonitorService
 from app.services.sentinel import service
 
 
@@ -29,3 +30,24 @@ def test_transaction_chat_returns_grounded_answer():
     )
     assert response.answer
     assert len(response.follow_ups) <= 2
+
+
+def test_live_monitor_bootstrap_returns_graph_and_alerts():
+    live_service = LiveMonitorService()
+    payload = live_service.bootstrap()
+
+    assert payload.stats.transactions_monitored >= 60
+    assert len(payload.transactions) <= 18
+    assert payload.graph.nodes
+    assert payload.graph.edges
+
+
+def test_live_monitor_stream_advances_latest_transaction():
+    live_service = LiveMonitorService()
+    initial_payload = live_service.bootstrap()
+    next_payload = live_service.stream(batch_size=6)
+
+    assert initial_payload.generated_at is not None
+    assert next_payload.generated_at is not None
+    assert next_payload.generated_at >= initial_payload.generated_at
+    assert next_payload.transactions[0].transaction_id != initial_payload.transactions[0].transaction_id

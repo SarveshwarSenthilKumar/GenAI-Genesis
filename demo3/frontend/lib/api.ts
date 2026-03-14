@@ -3,6 +3,7 @@ import type {
   BehaviorProfile,
   DashboardSummary,
   GraphResponse,
+  LiveMonitorPayload,
   ScoredTransaction,
   TransactionChatResponse,
 } from "@/lib/types";
@@ -38,6 +39,14 @@ export function getBehaviorProfile(userId: string): Promise<BehaviorProfile> {
   return getJson<BehaviorProfile>(`/api/users/${userId}/behavior-profile`);
 }
 
+export function getLiveMonitorBootstrap(): Promise<LiveMonitorPayload> {
+  return getJson<LiveMonitorPayload>("/api/live/bootstrap");
+}
+
+export function getLiveMonitorStream(batch = 6): Promise<LiveMonitorPayload> {
+  return getJson<LiveMonitorPayload>(`/api/live/stream?batch=${batch}`);
+}
+
 export async function postTransactionChat(
   transactionId: string,
   payload: { message: string; history: ChatMessage[] },
@@ -59,4 +68,3 @@ export async function postTransactionChat(
 
   return response.json() as Promise<TransactionChatResponse>;
 }
-
