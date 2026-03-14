@@ -43,6 +43,11 @@ const SCENARIOS = [
   { key: "account_takeover", label: "Account takeover" },
   { key: "laundering_ring", label: "Laundering ring" },
   { key: "smurfing_burst", label: "Smurfing burst" },
+  { key: "vpn_takeover", label: "VPN/IP takeover" },
+  { key: "mule_fanout", label: "Mule fan-out" },
+  { key: "merchant_fraud", label: "Merchant fraud" },
+  { key: "dormant_reactivation", label: "Dormant reactivation" },
+  { key: "cross_border_travel", label: "Cross-border travel" },
 ] as const;
 
 type FilterValue = "all" | "block" | "hold" | "review";
@@ -81,6 +86,9 @@ export function IncidentQueueWorkspace({
   const [queueError, setQueueError] = useState<string | null>(null);
   const [panelError, setPanelError] = useState<string | null>(null);
   const [lastScenario, setLastScenario] = useState<string | null>(null);
+  const [injectedIncidentLabels, setInjectedIncidentLabels] = useState<
+    Record<string, string>
+  >({});
   const panelRef = useRef<HTMLElement | null>(null);
   const closeTimeoutRef = useRef<number | null>(null);
 
@@ -159,9 +167,17 @@ export function IncidentQueueWorkspace({
       const next = await triggerIncidentScenario(name);
       setQueueError(null);
       setLastScenario(name);
+      const currentIds = new Set(queue.incidents.map((item) => item.incident_id));
+      const injectedLabels = Object.fromEntries(
+        next.incidents
+          .filter((item) => !currentIds.has(item.incident_id))
+          .map((item) => [item.incident_id, name]),
+      );
+      if (Object.keys(injectedLabels).length) {
+        setInjectedIncidentLabels((current) => ({ ...current, ...injectedLabels }));
+      }
 
       if (selectedIncidentId) {
-        const currentIds = new Set(queue.incidents.map((item) => item.incident_id));
         const freshCount = next.incidents.filter(
           (item) => !currentIds.has(item.incident_id),
         ).length;
@@ -652,6 +668,10 @@ export function IncidentQueueWorkspace({
               {visibleIncidents.length ? (
                 visibleIncidents.map((incident) => {
                 const selected = incident.incident_id === selectedIncidentId;
+                const injectedScenario =
+                  incident.injected_scenario ?? injectedIncidentLabels[incident.incident_id];
+                const isManuallyInjected =
+                  incident.manually_injected || Boolean(injectedScenario);
 
                 return (
                   <button
@@ -675,6 +695,11 @@ export function IncidentQueueWorkspace({
                           >
                             {decisionLabels[incident.decision]}
                           </span>
+                          {isManuallyInjected ? (
+                            <span className="inline-flex rounded-full bg-[#E6EEFF] px-2.5 py-1 text-[11px] uppercase tracking-[0.18em] text-[#2563EB]">
+                              Demo inject
+                            </span>
+                          ) : null}
                         </div>
                         <p className="mt-1.5 text-sm text-muted">
                           {formatRelativeIncidentTime(incident.generated_at)} ·{" "}
@@ -683,6 +708,11 @@ export function IncidentQueueWorkspace({
                         <p className="mt-1 truncate text-sm text-muted">
                           {incident.counterpart_label}
                         </p>
+                        {isManuallyInjected && injectedScenario ? (
+                          <p className="mt-1 text-xs uppercase tracking-[0.18em] text-[#2563EB]">
+                            Scenario: {injectedScenario.replace(/_/g, " ")}
+                          </p>
+                        ) : null}
                       </div>
                       <div className="text-right">
                         <p className="font-serif text-[2rem] leading-none text-ink">

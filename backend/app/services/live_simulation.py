@@ -49,11 +49,18 @@ class TransactionEngine:
             "account_takeover": self._generate_account_takeover_scenario,
             "laundering_ring": self._generate_ring,
             "smurfing_burst": self._generate_smurfing_burst_scenario,
+            "vpn_takeover": self._generate_vpn_takeover_scenario,
+            "mule_fanout": self._generate_mule_fanout_scenario,
+            "merchant_fraud": self._generate_merchant_fraud_scenario,
+            "dormant_reactivation": self._generate_dormant_reactivation_scenario,
+            "cross_border_travel": self._generate_cross_border_travel_scenario,
         }
         handler = handlers.get(name)
         if handler is None:
             raise KeyError(name)
         batch = handler()
+        for tx in batch:
+            tx["injected_scenario"] = name
         return batch if isinstance(batch, list) else [batch]
 
     def seed(self, count: int = 60) -> list[dict]:
@@ -131,9 +138,13 @@ class TransactionEngine:
         force_new_ip: bool = False,
         shared_device: str | None = None,
         shared_ip: str | None = None,
+        merchant_id: str | None = None,
+        timestamp_override: datetime | None = None,
     ) -> dict:
         self.sequence += 1
-        tx_time = self._advance_time()
+        tx_time = timestamp_override or self._advance_time()
+        if timestamp_override:
+            self.current_time = max(self.current_time, timestamp_override)
         sender_devices = self.account_devices[sender]
         sender_ips = self.account_ips[sender]
         if shared_device:
@@ -170,7 +181,11 @@ class TransactionEngine:
             "amount": round(amount, 2),
             "currency": self.random.choice(CURRENCIES),
             "transaction_type": transaction_type,
-            "merchant_id": self.random.choice(MERCHANTS) if transaction_type == "purchase" else None,
+            "merchant_id": (
+                merchant_id
+                if transaction_type == "purchase"
+                else None
+            ) or (self.random.choice(MERCHANTS) if transaction_type == "purchase" else None),
             "beneficiary_id": self.random.choice(BENEFICIARIES),
             "device_id": device_id,
             "ip_address": ip_address,
@@ -194,6 +209,7 @@ class TransactionEngine:
             "sender_home_country": self.account_country[sender],
             "is_fraud": is_fraud,
             "tag": tag,
+            "injected_scenario": None,
         }
 
     def _generate_normal_transaction(self) -> dict:
@@ -257,6 +273,36 @@ class TransactionEngine:
             )
         return batch
 
+    def _generate_vpn_takeover_scenario(self) -> list[dict]:
+        sender, receiver = self._pick_normal_accounts()
+        shared_ip = self._ip_address()
+        foreign_country = self.random.choice(
+            [country for country in COUNTRIES[4:] if country != self.account_country[sender]]
+        )
+        batch: list[dict] = []
+        amounts = [6400.0, 9250.0, 11800.0]
+
+        for index, amount in enumerate(amounts):
+            self.current_time += timedelta(seconds=55 if index else 20)
+            batch.append(
+                self._append_transaction(
+                    self._base_transaction(
+                        sender=sender,
+                        receiver=receiver,
+                        amount=amount,
+                        ip_country=foreign_country,
+                        transaction_type="transfer",
+                        tag="vpn-takeover",
+                        is_fraud=True,
+                        force_new_device=index == 0,
+                        force_new_ip=index == 0,
+                        shared_ip=shared_ip,
+                    )
+                )
+            )
+
+        return batch
+
     def _generate_smurfing_burst_scenario(self) -> list[dict]:
         sender = self.random.choice(self.accounts)
         receivers = self.random.sample(self.accounts, 4)
@@ -280,6 +326,178 @@ class TransactionEngine:
                     )
                 )
             )
+        return batch
+
+    def _generate_mule_fanout_scenario(self) -> list[dict]:
+        sender = self.random.choice(self.accounts)
+        mule_targets = self.random.sample(self.mules, 3)
+        shared_device = self._device_id()
+        foreign_country = self.random.choice(
+            [country for country in COUNTRIES if country != self.account_country[sender]]
+        )
+        batch: list[dict] = []
+        start_time = self.current_time
+
+        for index, receiver in enumerate(mule_targets):
+            self.current_time = start_time + timedelta(seconds=40 * index)
+            batch.append(
+                self._append_transaction(
+                    self._base_transaction(
+                        sender=sender,
+                        receiver=receiver,
+                        amount=7800.0 + (index * 900),
+                        ip_country=foreign_country,
+                        transaction_type="transfer",
+                        tag="mule-fanout",
+                        is_fraud=True,
+                        force_new_device=index == 0,
+                        force_new_ip=index == 0,
+                        shared_device=shared_device,
+                    )
+                )
+            )
+
+        cashout = self.random.choice(sorted(self.cashout_nodes))
+        self.current_time = start_time + timedelta(seconds=180)
+        batch.append(
+            self._append_transaction(
+                self._base_transaction(
+                    sender=mule_targets[-1],
+                    receiver=cashout,
+                    amount=10400.0,
+                    ip_country=self.account_country.get(mule_targets[-1], foreign_country),
+                    transaction_type="withdrawal",
+                    tag="mule-cashout",
+                    is_fraud=True,
+                    shared_device=shared_device,
+                )
+            )
+        )
+
+        return batch
+
+    def _generate_merchant_fraud_scenario(self) -> list[dict]:
+        merchant_id = self.random.choice(MERCHANTS)
+        shared_device = self._device_id()
+        shared_ip = self._ip_address()
+        shared_country = self.random.choice(COUNTRIES[4:])
+        compromised_accounts = self.random.sample(self.accounts, 4)
+        batch: list[dict] = []
+        start_time = self.current_time
+
+        for index, sender in enumerate(compromised_accounts):
+            receiver = self.random.choice([account for account in self.accounts if account != sender])
+            self.current_time = start_time + timedelta(seconds=25 * index)
+            batch.append(
+                self._append_transaction(
+                    self._base_transaction(
+                        sender=sender,
+                        receiver=receiver,
+                        amount=1650.0 + (index * 240),
+                        ip_country=shared_country,
+                        transaction_type="purchase",
+                        tag="merchant-fraud",
+                        is_fraud=True,
+                        force_new_device=index == 0,
+                        force_new_ip=index == 0,
+                        shared_device=shared_device,
+                        shared_ip=shared_ip,
+                        merchant_id=merchant_id,
+                    )
+                )
+            )
+
+        return batch
+
+    def _generate_dormant_reactivation_scenario(self) -> list[dict]:
+        sender = self.random.choice(
+            [account for account in self.accounts if self.account_age_days[account] >= 180]
+        )
+        receiver_candidates = [account for account in self.accounts if account != sender]
+        foreign_country = self.random.choice(
+            [country for country in COUNTRIES if country != self.account_country[sender]]
+        )
+        old_timestamp = self.current_time - timedelta(days=120)
+        old_receiver = self.random.choice(receiver_candidates)
+
+        baseline_tx = self._append_transaction(
+            self._base_transaction(
+                sender=sender,
+                receiver=old_receiver,
+                amount=190.0,
+                ip_country=self.account_country[sender],
+                transaction_type="purchase",
+                tag="baseline-history",
+                is_fraud=False,
+                timestamp_override=old_timestamp,
+            )
+        )
+
+        del baseline_tx
+        self.current_time += timedelta(seconds=25)
+
+        batch: list[dict] = []
+        for index in range(3):
+            receiver = receiver_candidates[index]
+            self.current_time += timedelta(seconds=45 if index else 10)
+            batch.append(
+                self._append_transaction(
+                    self._base_transaction(
+                        sender=sender,
+                        receiver=receiver,
+                        amount=6900.0 + (index * 800),
+                        ip_country=foreign_country,
+                        transaction_type="transfer",
+                        tag="dormant-reactivation",
+                        is_fraud=True,
+                        force_new_device=index == 0,
+                        force_new_ip=index == 0,
+                    )
+                )
+            )
+
+        return batch
+
+    def _generate_cross_border_travel_scenario(self) -> list[dict]:
+        sender, receiver = self._pick_normal_accounts()
+        home_country = self.account_country[sender]
+        foreign_country = self.random.choice(
+            [country for country in COUNTRIES if country != home_country]
+        )
+        batch: list[dict] = []
+
+        self.current_time += timedelta(seconds=20)
+        batch.append(
+            self._append_transaction(
+                self._base_transaction(
+                    sender=sender,
+                    receiver=receiver,
+                    amount=420.0,
+                    ip_country=home_country,
+                    transaction_type="purchase",
+                    tag="travel-baseline",
+                    is_fraud=False,
+                )
+            )
+        )
+
+        self.current_time += timedelta(minutes=12)
+        batch.append(
+            self._append_transaction(
+                self._base_transaction(
+                    sender=sender,
+                    receiver=receiver,
+                    amount=12150.0,
+                    ip_country=foreign_country,
+                    transaction_type="transfer",
+                    tag="cross-border-travel",
+                    is_fraud=True,
+                    force_new_device=True,
+                    force_new_ip=True,
+                )
+            )
+        )
+
         return batch
 
     def _generate_ring(self) -> list[dict]:

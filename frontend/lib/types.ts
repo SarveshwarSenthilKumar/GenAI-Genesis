@@ -130,6 +130,8 @@ export type IncidentQueueItem = {
   summary: string;
   generated_at: string;
   type: "transaction" | "ring";
+  manually_injected: boolean;
+  injected_scenario: string | null;
 };
 
 export type IncidentQueueResponse = {
@@ -294,6 +296,7 @@ export type LiveMonitorGraph = {
 
 export type LiveMonitorPayload = {
   generated_at: string | null;
+  active_scenario: string | null;
   stats: LiveMonitorStats;
   transactions: LiveMonitorTransactionRow[];
   alerts: LiveMonitorAlert[];

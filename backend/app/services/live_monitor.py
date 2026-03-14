@@ -41,6 +41,7 @@ class LiveMonitorService:
     def __init__(self) -> None:
         self.engine = TransactionEngine()
         self.rule_engine = RuleEngine()
+        self.active_scenario: str | None = None
         self.engine.seed(60)
         self._latest_snapshot: LiveMonitorSnapshot | None = None
 
@@ -50,6 +51,7 @@ class LiveMonitorService:
         return snapshot.payload
 
     def stream(self, batch_size: int = 6) -> LiveMonitorPayload:
+        self.active_scenario = None
         self.engine.next_batch(batch_size)
         snapshot = self._build_snapshot()
         self._latest_snapshot = snapshot
@@ -61,6 +63,11 @@ class LiveMonitorService:
         snapshot = self._build_snapshot()
         self._latest_snapshot = snapshot
         return snapshot.payload
+
+    def trigger_scenario(self, name: str) -> LiveMonitorPayload:
+        self.engine.inject_scenario(name)
+        self.active_scenario = name
+        return self._build_snapshot().payload
 
     def current_snapshot(self) -> LiveMonitorSnapshot:
         return self._latest_snapshot or self._build_snapshot()
@@ -78,6 +85,15 @@ class LiveMonitorService:
         graph_start = time.perf_counter()
         ring_alerts, account_signals = detect_fraud_rings(enriched)
         graph_latency_ms = (time.perf_counter() - graph_start) * 1000
+        injected_accounts = {
+            tx["sender_account"]
+            for tx in enriched
+            if tx.get("injected_scenario")
+        } | {
+            tx["receiver_account"]
+            for tx in enriched
+            if tx.get("injected_scenario")
+        }
 
         alerts: list[LiveMonitorAlert] = []
         transaction_rows: list[LiveMonitorTransactionRow] = []
@@ -158,6 +174,8 @@ class LiveMonitorService:
                     network_evidence=network_evidence,
                     accounts_involved=accounts_involved,
                     suspicious_funds_total=suspicious_funds_total,
+                    manually_injected=bool(tx.get("injected_scenario")),
+                    injected_scenario=tx.get("injected_scenario"),
                     why_flagged=LiveMonitorWhyFlagged(
                         transaction_anomaly_score=anomaly_score,
                         rule_score=rule_score,
@@ -192,6 +210,12 @@ class LiveMonitorService:
                     network_evidence=alert.evidence,
                     accounts_involved=alert.accounts,
                     suspicious_funds_total=alert.suspicious_funds_total,
+                    manually_injected=bool(set(alert.accounts) & injected_accounts),
+                    injected_scenario=(
+                        self.active_scenario
+                        if self.active_scenario and set(alert.accounts) & injected_accounts
+                        else None
+                    ),
                     why_flagged=LiveMonitorWhyFlagged(
                         transaction_anomaly_score=0.0,
                         rule_score=0.0,
@@ -230,7 +254,10 @@ class LiveMonitorService:
                 )
             )
 
-        alerts.sort(key=lambda item: item.final_risk, reverse=True)
+        alerts.sort(
+            key=lambda item: (item.manually_injected, item.final_risk),
+            reverse=True,
+        )
         top_alerts = alerts[:10]
         top_transactions = list(
             reversed(sorted(transaction_rows, key=lambda item: item.timestamp)[-18:])
@@ -251,6 +278,7 @@ class LiveMonitorService:
         snapshot = LiveMonitorSnapshot(
             payload=LiveMonitorPayload(
                 generated_at=enriched[-1]["timestamp"] if enriched else None,
+                active_scenario=self.active_scenario,
                 stats=stats,
                 transactions=top_transactions,
                 alerts=top_alerts,
