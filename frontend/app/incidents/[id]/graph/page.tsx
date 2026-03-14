@@ -32,10 +32,10 @@ export default async function IncidentGraphPage({
         eyebrow={`${detail.title} · ${detail.counterpart_label}`}
         action={
           <Link
-            href={`/incidents/${detail.incident_id}`}
+            href="/dashboard"
             className="rounded-full border border-line px-4 py-2 text-sm text-ink transition hover:bg-paper"
           >
-            Back to investigation
+            Back to dashboard
           </Link>
         }
       >

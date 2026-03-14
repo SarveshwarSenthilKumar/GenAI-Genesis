@@ -18,7 +18,7 @@ export function ServiceUnavailable({
             href="/dashboard"
             className="rounded-full bg-ink px-5 py-3 text-paper transition hover:opacity-90"
           >
-            Back to queue
+            Back to dashboard
           </Link>
           <span className="rounded-full border border-line px-4 py-3 text-muted">
             Check that the FastAPI backend is running and reachable

@@ -19,10 +19,10 @@ export default async function GraphPage({
         eyebrow={`${detail.title} · ${detail.recipient_label}`}
         action={
           <Link
-            href={`/cases/${detail.transaction_id}`}
+            href="/dashboard"
             className="rounded-full border border-line px-4 py-2 text-sm text-ink transition hover:bg-paper"
           >
-            Back to case
+            Back to dashboard
           </Link>
         }
       >

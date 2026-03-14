@@ -144,7 +144,7 @@ export default async function IncidentDetailPage({
               href="/dashboard"
               className="rounded-full border border-line px-5 py-3 text-sm text-ink transition hover:bg-paper"
             >
-              Back to queue
+              Back to dashboard
             </Link>
           </div>
         </div>

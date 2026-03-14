@@ -1000,7 +1000,7 @@ function RiskBar({
       <div className="mb-2 flex items-center justify-between text-sm text-muted">
         <div className="flex items-center gap-2">
           <span>Overall fraud risk</span>
-          <InfoBadge description={description} />
+          <InfoBadge description={description} align="start" />
         </div>
         <span>{Math.round(value * 100)}%</span>
       </div>
