@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { CytoscapeGraph } from "@/components/cytoscape-graph";
 import { SectionCard } from "@/components/section-card";
+import { ServiceUnavailable } from "@/components/service-unavailable";
 import { getIncidentDetail, getIncidentGraph } from "@/lib/api";
 
 export default async function IncidentGraphPage({
@@ -10,10 +11,19 @@ export default async function IncidentGraphPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [detail, graph] = await Promise.all([
-    getIncidentDetail(id),
-    getIncidentGraph(id),
-  ]);
+  let detail;
+  let graph;
+
+  try {
+    [detail, graph] = await Promise.all([getIncidentDetail(id), getIncidentGraph(id)]);
+  } catch {
+    return (
+      <ServiceUnavailable
+        title="Network view unavailable"
+        message="Sentinel could not load the investigation graph right now. The backend may be unavailable or the incident snapshot is no longer active."
+      />
+    );
+  }
 
   return (
     <main className="space-y-8">

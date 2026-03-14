@@ -52,9 +52,9 @@ class TransactionEngine:
         batch: list[dict] = []
         while len(batch) < count:
             scenario_roll = self.random.random()
-            if scenario_roll < 0.14:
+            if scenario_roll < 0.08:
                 batch.extend(self._generate_ring())
-            elif scenario_roll < 0.26:
+            elif scenario_roll < 0.16:
                 batch.append(self._append_transaction(self._generate_suspicious_single()))
             else:
                 batch.append(self._append_transaction(self._generate_normal_transaction()))

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { IncidentChat } from "@/components/incident-chat";
 import { ScoreBreakdown } from "@/components/score-breakdown";
 import { SectionCard } from "@/components/section-card";
+import { ServiceUnavailable } from "@/components/service-unavailable";
 import { getIncidentDetail } from "@/lib/api";
 
 const currency = new Intl.NumberFormat("en-US", {
@@ -24,7 +25,18 @@ export default async function IncidentDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const detail = await getIncidentDetail(id);
+  let detail;
+
+  try {
+    detail = await getIncidentDetail(id);
+  } catch {
+    return (
+      <ServiceUnavailable
+        title="Investigation unavailable"
+        message="Sentinel could not open this incident right now. The backend may be restarting, unreachable, or missing the current incident snapshot."
+      />
+    );
+  }
 
   return (
     <main className="space-y-8">
