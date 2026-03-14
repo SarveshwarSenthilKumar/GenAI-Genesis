@@ -1,0 +1,74 @@
+{
+  "profiles": [
+    {
+      "user_id": "demo_user_01",
+      "account_id": "victim_account",
+      "customer_name": "Casey Morgan",
+      "baseline_login_to_transfer_sec": 140,
+      "expected_path": [
+        "dashboard",
+        "accounts",
+        "transfer",
+        "confirm"
+      ],
+      "known_devices": [
+        "macbook-pro-td"
+      ]
+    },
+    {
+      "user_id": "demo_user_02",
+      "account_id": "review_account",
+      "customer_name": "Jordan Lee",
+      "baseline_login_to_transfer_sec": 180,
+      "expected_path": [
+        "dashboard",
+        "payments",
+        "transfer",
+        "confirm"
+      ],
+      "known_devices": [
+        "iphone-td"
+      ]
+    }
+  ],
+  "sessions": [
+    {
+      "session_id": "sess_normal_victim",
+      "user_id": "demo_user_01",
+      "page_path": [
+        "dashboard",
+        "accounts",
+        "transfer",
+        "confirm"
+      ],
+      "login_to_transfer_sec": 148,
+      "device_id": "macbook-pro-td",
+      "payee_added": false
+    },
+    {
+      "session_id": "sess_blocked_victim",
+      "user_id": "demo_user_01",
+      "page_path": [
+        "login",
+        "new-payee",
+        "transfer",
+        "confirm"
+      ],
+      "login_to_transfer_sec": 28,
+      "device_id": "unknown-browser-44",
+      "payee_added": true
+    },
+    {
+      "session_id": "sess_review_01",
+      "user_id": "demo_user_02",
+      "page_path": [
+        "dashboard",
+        "transfer",
+        "confirm"
+      ],
+      "login_to_transfer_sec": 108,
+      "device_id": "iphone-td",
+      "payee_added": true
+    }
+  ]
+}

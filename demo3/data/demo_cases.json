@@ -1,0 +1,68 @@
+{
+  "cases": [
+    {
+      "transaction_id": "tx_normal_001",
+      "user_id": "demo_user_01",
+      "scenario": "normal_case",
+      "title": "Trusted vendor payout",
+      "timeline_label": "10:12 AM",
+      "source_account": "victim_account",
+      "recipient_account": "trusted_vendor_01",
+      "recipient_label": "Trusted Vendor",
+      "amount": 1840.0,
+      "hour": 10,
+      "type": "TRANSFER",
+      "step": 215,
+      "oldbalanceOrg": 12500.0,
+      "newbalanceOrig": 10660.0,
+      "oldbalanceDest": 2200.0,
+      "newbalanceDest": 4040.0,
+      "session_id": "sess_normal_victim",
+      "known_recipient": true,
+      "sort_order": 3
+    },
+    {
+      "transaction_id": "tx_review_001",
+      "user_id": "demo_user_02",
+      "scenario": "review_case",
+      "title": "Unfamiliar bridge transfer",
+      "timeline_label": "2:18 PM",
+      "source_account": "review_account",
+      "recipient_account": "bridge_account",
+      "recipient_label": "Bridge Account",
+      "amount": 9200.0,
+      "hour": 14,
+      "type": "TRANSFER",
+      "step": 246,
+      "oldbalanceOrg": 26000.0,
+      "newbalanceOrig": 16800.0,
+      "oldbalanceDest": 1800.0,
+      "newbalanceDest": 11000.0,
+      "session_id": "sess_review_01",
+      "known_recipient": false,
+      "sort_order": 2
+    },
+    {
+      "transaction_id": "tx_blocked_001",
+      "user_id": "demo_user_01",
+      "scenario": "blocked_case",
+      "title": "High-risk transfer to mule cluster",
+      "timeline_label": "9:04 PM",
+      "source_account": "victim_account",
+      "recipient_account": "mule_A",
+      "recipient_label": "Mule Account A",
+      "amount": 4800.0,
+      "hour": 21,
+      "type": "TRANSFER",
+      "step": 280,
+      "oldbalanceOrg": 5100.0,
+      "newbalanceOrig": 300.0,
+      "oldbalanceDest": 0.0,
+      "newbalanceDest": 4800.0,
+      "session_id": "sess_blocked_victim",
+      "known_recipient": false,
+      "sort_order": 1
+    }
+  ]
+}
+
