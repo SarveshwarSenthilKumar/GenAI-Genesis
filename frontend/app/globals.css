@@ -70,6 +70,16 @@ a {
   box-sizing: border-box;
 }
 
+@layer utilities {
+  .shadow-frame {
+    box-shadow: 0 26px 80px rgba(15, 23, 42, 0.12);
+  }
+  
+  .dark .shadow-frame {
+    box-shadow: 0 26px 80px rgba(0, 0, 0, 0.4);
+  }
+}
+
 ::selection {
   background: rgba(37, 99, 235, 0.18);
 }

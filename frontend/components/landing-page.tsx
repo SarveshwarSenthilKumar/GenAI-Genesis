@@ -334,23 +334,23 @@ export function LandingPage() {
 
   return (
     <main ref={rootRef} className="pb-8">
-      <section className="relative overflow-hidden rounded-[40px] border border-white/80 bg-[#E8EDF3] shadow-[0_28px_90px_rgba(15,23,42,0.12)]">
+      <section className="relative overflow-hidden rounded-[40px] border border-line/80 bg-surface shadow-frame dark:shadow-[0_28px_90px_rgba(0,0,0,0.4)]">
         <div
           data-landing-glow
-          className="absolute -left-16 top-12 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(37,99,235,0.14),transparent_66%)] opacity-0 blur-2xl"
+          className="absolute -left-16 top-12 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(37,99,235,0.14),transparent_66%)] opacity-0 blur-2xl dark:opacity-20"
         />
         <div
           data-landing-glow
-          className="absolute right-[-5rem] top-[-2rem] h-80 w-80 rounded-full bg-[radial-gradient(circle,rgba(191,219,254,0.8),transparent_66%)] opacity-0 blur-3xl"
+          className="absolute right-[-5rem] top-[-2rem] h-80 w-80 rounded-full bg-[radial-gradient(circle,rgba(191,219,254,0.8),transparent_66%)] opacity-0 blur-3xl dark:opacity-30"
         />
 
         <div className="relative mx-auto max-w-[1160px] px-6 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
           <div data-landing-reveal className="opacity-0">
             <div>
-              <p className="text-xs uppercase tracking-[0.34em] text-slate-500">
+              <p className="text-xs uppercase tracking-[0.34em] text-muted dark:text-slate-400">
                 AI-native fraud defense
               </p>
-              <p className="mt-3 font-serif text-[4.1rem] font-semibold leading-none text-[#0B1324] sm:text-[4.8rem] lg:text-[5.2rem]">
+              <p className="mt-3 font-serif text-[4.1rem] font-semibold leading-none text-ink sm:text-[4.8rem] lg:text-[5.2rem] dark:text-slate-100">
                 Sentinel
               </p>
             </div>
@@ -360,19 +360,19 @@ export function LandingPage() {
             <div className="max-w-[34rem]">
               <p
                 data-landing-reveal
-                className="text-xs uppercase tracking-[0.36em] text-slate-500 opacity-0"
+                className="text-xs uppercase tracking-[0.36em] text-muted dark:text-slate-400 opacity-0"
               >
                 Triage faster, investigate deeper
               </p>
               <h1
                 data-landing-reveal
-                className="mt-5 font-serif text-[3.5rem] leading-[0.92] text-[#0B1324] opacity-0 sm:text-[4.5rem] lg:text-[5.4rem]"
+                className="mt-5 font-serif text-[3.5rem] leading-[0.92] text-ink opacity-0 sm:text-[4.5rem] lg:text-[5.4rem] dark:text-slate-100"
               >
                 Detect fraud beyond transactions.
               </h1>
               <p
                 data-landing-reveal
-                className="mt-6 max-w-xl text-lg leading-8 text-[#334155] opacity-0"
+                className="mt-6 max-w-xl text-lg leading-8 text-muted opacity-0 dark:text-slate-300"
               >
                 Behavioral identity and network intelligence in one analyst workflow.
               </p>
@@ -381,7 +381,7 @@ export function LandingPage() {
                 <Link
                   data-landing-cta
                   href="/dashboard"
-                  className="inline-flex min-w-[18rem] items-center justify-center rounded-full bg-[#0B1324] px-10 py-5 text-lg font-medium text-[#F8FAFC] shadow-[0_16px_36px_rgba(15,23,42,0.14)] transition-all duration-200 hover:-translate-y-[1px] hover:bg-[#111C33] hover:shadow-[0_22px_46px_rgba(15,23,42,0.18)]"
+                  className="inline-flex min-w-[18rem] items-center justify-center rounded-full bg-ink px-10 py-5 text-lg font-medium text-paper shadow-frame transition-all duration-200 hover:-translate-y-[1px] hover:bg-slate-800 hover:shadow-[0_22px_46px_rgba(0,0,0,0.3)] dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
                 >
                   Open the analyst console
                 </Link>
@@ -395,10 +395,10 @@ export function LandingPage() {
 
           <div className="grid gap-8 pt-24 lg:grid-cols-[0.8fr_1.2fr]">
             <div data-landing-reveal className="space-y-3 opacity-0">
-              <p className="text-xs uppercase tracking-[0.3em] text-slate-500">
+              <p className="text-xs uppercase tracking-[0.3em] text-muted dark:text-slate-400">
                 How Sentinel works
               </p>
-              <h2 className="max-w-md font-serif text-4xl leading-tight text-[#0F172A] sm:text-[3.35rem]">
+              <h2 className="max-w-md font-serif text-4xl leading-tight text-ink sm:text-[3.35rem] dark:text-slate-100">
                 Fraud revealed through transaction networks.
               </h2>
             </div>
@@ -411,14 +411,14 @@ export function LandingPage() {
                   className="grid gap-3 pb-4 opacity-0 sm:grid-cols-[7rem_1fr]"
                 >
                   <div>
-                    <p className="text-xs uppercase tracking-[0.26em] text-slate-500">
+                    <p className="text-xs uppercase tracking-[0.26em] text-muted dark:text-slate-400">
                       {step.index}
                     </p>
-                    <p className="mt-1 text-base font-medium text-[#0F172A]">
+                    <p className="mt-1 text-base font-medium text-ink dark:text-slate-100">
                       {step.title}
                     </p>
                   </div>
-                  <p className="max-w-xl text-base leading-7 text-[#334155]">{step.body}</p>
+                  <p className="max-w-xl text-base leading-7 text-muted dark:text-slate-300">{step.body}</p>
                 </li>
               ))}
             </ol>
@@ -432,17 +432,17 @@ export function LandingPage() {
 function InvestigationTrace() {
   return (
     <div className="relative mx-auto w-full max-w-[34rem] lg:mx-0">
-      <div className="absolute left-8 top-6 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.14),transparent_70%)] blur-3xl" />
-      <div className="absolute right-0 bottom-8 h-44 w-44 rounded-full bg-[radial-gradient(circle,rgba(245,158,11,0.12),transparent_68%)] blur-3xl" />
+      <div className="absolute left-8 top-6 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.14),transparent_70%)] blur-3xl dark:opacity-60" />
+      <div className="absolute right-0 bottom-8 h-44 w-44 rounded-full bg-[radial-gradient(circle,rgba(245,158,11,0.12),transparent_68%)] blur-3xl dark:opacity-60" />
 
-      <div className="relative overflow-hidden rounded-[30px] border border-white/70 bg-[radial-gradient(circle_at_18%_18%,rgba(37,99,235,0.22),transparent_24%),radial-gradient(circle_at_82%_78%,rgba(245,158,11,0.16),transparent_22%),linear-gradient(180deg,#0B1324_0%,#111C33_100%)] p-6 shadow-[0_26px_80px_rgba(15,23,42,0.22)]">
-        <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.08),transparent_40%,transparent_65%,rgba(255,255,255,0.03))]" />
+      <div className="relative overflow-hidden rounded-[30px] border border-line/70 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6 shadow-frame dark:from-slate-800 dark:via-slate-700 dark:to-slate-800">
+        <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.08),transparent_40%,transparent_65%,rgba(255,255,255,0.03))] dark:opacity-50" />
 
         <div className="relative">
-          <p className="text-[11px] uppercase tracking-[0.26em] text-slate-300">
+          <p className="text-[11px] uppercase tracking-[0.26em] text-slate-300 dark:text-slate-400">
             Investigation trace
           </p>
-          <p className="mt-2 text-sm text-slate-100">
+          <p className="mt-2 text-sm text-slate-100 dark:text-slate-200">
             Suspicious money movement across a network
           </p>
         </div>

@@ -10,7 +10,11 @@ export function AppShellHeader() {
   const isQueue = pathname === "/dashboard";
 
   if (isLanding) {
-    return null;
+    return (
+      <header className="absolute top-4 right-4 z-50">
+        <ThemeToggle />
+      </header>
+    );
   }
 
   return (
