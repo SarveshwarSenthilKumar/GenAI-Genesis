@@ -157,13 +157,13 @@ export function LiveMonitorDashboard({
               >
                 {polling ? "Pause live stream" : "Resume live stream"}
               </button>
-              <span className="rounded-full border border-line bg-paper px-3 py-2 text-xs uppercase tracking-[0.18em] text-muted">
-                {isInjectingScenario
-                  ? "Injecting..."
-                  : lastScenario
-                    ? `Last: ${lastScenario.replace(/_/g, " ")}`
-                    : "Ready"}
-              </span>
+              {(isInjectingScenario || lastScenario) && (
+                <span className="rounded-full border border-line bg-paper px-3 py-2 text-xs uppercase tracking-[0.18em] text-muted">
+                  {isInjectingScenario
+                    ? "Injecting..."
+                    : `Last: ${lastScenario.replace(/_/g, " ")}`}
+                </span>
+              )}
             </div>
           ) : (
             <span className="rounded-full border border-line bg-paper px-4 py-2 text-xs uppercase tracking-[0.18em] text-muted">
