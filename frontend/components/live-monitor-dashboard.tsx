@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { startTransition, useEffect, useRef, useState } from "react";
 
-import { getLiveMonitorStream } from "@/lib/api";
+import { getLiveMonitorStream, triggerLiveMonitorScenario } from "@/lib/api";
 import type { LiveAction, LiveMonitorPayload } from "@/lib/types";
 
 import { LiveNetworkGraph } from "./live-network-graph";
@@ -30,9 +30,11 @@ export function LiveMonitorDashboard({
   const [payload, setPayload] = useState(initialData);
   const [polling, setPolling] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isInjectingScenario, setIsInjectingScenario] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [minimumRisk, setMinimumRisk] = useState(65);
   const [actionFilter, setActionFilter] = useState<"all" | LiveAction>("all");
+  const [lastScenario, setLastScenario] = useState<string | null>(null);
   const inFlightRef = useRef(false);
 
   async function refresh(batch: number) {
@@ -52,6 +54,27 @@ export function LiveMonitorDashboard({
     } finally {
       inFlightRef.current = false;
       setIsRefreshing(false);
+    }
+  }
+
+  async function injectScenario(name: string) {
+    if (inFlightRef.current) {
+      return;
+    }
+
+    inFlightRef.current = true;
+    setIsInjectingScenario(true);
+
+    try {
+      const next = await triggerLiveMonitorScenario(name);
+      setPayload(next);
+      setLastScenario(name);
+      setError(null);
+    } catch {
+      setError("Scenario injection failed. Keep the backend running and try again.");
+    } finally {
+      inFlightRef.current = false;
+      setIsInjectingScenario(false);
     }
   }
 
@@ -120,17 +143,13 @@ export function LiveMonitorDashboard({
             >
               {polling ? "Pause live stream" : "Resume live stream"}
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                startTransition(() => {
-                  void refresh(12);
-                });
-              }}
-              className="rounded-full bg-ink px-4 py-2 text-sm text-paper transition hover:opacity-90"
-            >
-              Inject suspicious burst
-            </button>
+            <span className="rounded-full border border-line bg-paper px-3 py-2 text-xs uppercase tracking-[0.18em] text-muted">
+              {isInjectingScenario
+                ? "Injecting..."
+                : lastScenario
+                  ? `Last: ${lastScenario.replace(/_/g, " ")}`
+                  : "Ready"}
+            </span>
           </div>
         }
       >
@@ -158,6 +177,40 @@ export function LiveMonitorDashboard({
               <span className="rounded-full bg-paper px-4 py-3 text-muted">
                 {isRefreshing ? "Refreshing..." : polling ? "Auto-refresh on" : "Paused"}
               </span>
+            </div>
+            <div className="mt-4 rounded-[22px] border border-line/50 bg-canvas/76 px-4 py-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.18em] text-muted">
+                    Scenario injector
+                  </p>
+                  <p className="mt-1 text-sm text-muted">
+                    Keep the stream running and inject a known pattern to verify the model reacts the way you expect.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {[
+                  { key: "normal", label: "Normal flow" },
+                  { key: "account_takeover", label: "Account takeover" },
+                  { key: "laundering_ring", label: "Laundering ring" },
+                  { key: "smurfing_burst", label: "Smurfing burst" },
+                ].map((scenario) => (
+                  <button
+                    key={scenario.key}
+                    type="button"
+                    disabled={isInjectingScenario}
+                    onClick={() => {
+                      startTransition(() => {
+                        void injectScenario(scenario.key);
+                      });
+                    }}
+                    className="rounded-full border border-line bg-paper px-4 py-2 text-sm text-ink transition hover:bg-canvas disabled:cursor-wait disabled:opacity-60"
+                  >
+                    {scenario.label}
+                  </button>
+                ))}
+              </div>
             </div>
             {error ? (
               <p className="rounded-[18px] border border-block/20 bg-block/5 px-4 py-3 text-sm text-block">
