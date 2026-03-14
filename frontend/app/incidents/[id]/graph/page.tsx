@@ -55,37 +55,57 @@ export default async function IncidentGraphPage({
                 entities that appear in the observed neighborhood.
               </p>
             </div>
-            <Metric
-              label="Distance to suspicious cluster"
-              value={formatDistance(graph.metrics.distance_to_suspicious_cluster)}
-            />
-            <Metric label="Recipient fan-in" value={String(graph.metrics.recipient_fan_in)} />
-            <Metric label="Recipient fan-out" value={String(graph.metrics.recipient_fan_out)} />
-            <Metric
-              label="Rapid chain detected"
-              value={graph.metrics.rapid_chain_detected ? "Yes" : "No"}
-            />
-            <div className="rounded-[24px] border border-line/70 bg-panel/90 p-5">
+            <div className="rounded-[24px] border border-line/70 bg-paper/75 p-5">
               <p className="text-xs uppercase tracking-[0.18em] text-muted">
-                Highlighted entities
+                Network signals
               </p>
-              <ul className="mt-3 space-y-2 text-sm text-muted">
-                {graph.highlighted_node_ids.map((nodeId) => (
-                  <li key={nodeId}>- {nodeId}</li>
-                ))}
-              </ul>
+              <dl className="mt-4 divide-y divide-line/45">
+                <SignalRow
+                  label="Distance to suspicious cluster"
+                  value={formatDistance(graph.metrics.distance_to_suspicious_cluster)}
+                />
+                <SignalRow
+                  label="Recipient fan-in"
+                  value={String(graph.metrics.recipient_fan_in)}
+                />
+                <SignalRow
+                  label="Recipient fan-out"
+                  value={String(graph.metrics.recipient_fan_out)}
+                />
+                <SignalRow
+                  label="Rapid chain detected"
+                  value={graph.metrics.rapid_chain_detected ? "Yes" : "No"}
+                />
+              </dl>
             </div>
-            <div className="rounded-[24px] border border-line/70 bg-panel/90 p-5">
-              <p className="text-xs uppercase tracking-[0.18em] text-muted">
-                Suspicious entities present
-              </p>
-              <ul className="mt-3 space-y-2 text-sm text-muted">
-                {graph.suspicious_cluster_ids.length ? (
-                  graph.suspicious_cluster_ids.map((nodeId) => <li key={nodeId}>- {nodeId}</li>)
-                ) : (
-                  <li>- None in current snapshot slice</li>
-                )}
-              </ul>
+            <div className="rounded-[24px] border border-line/70 bg-paper/75 p-5">
+              <p className="text-xs uppercase tracking-[0.18em] text-muted">Entities</p>
+              <div className="mt-4 space-y-5">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.16em] text-muted">
+                    Highlighted
+                  </p>
+                  <ul className="mt-3 space-y-2 text-sm text-muted">
+                    {graph.highlighted_node_ids.length ? (
+                      graph.highlighted_node_ids.map((nodeId) => <li key={nodeId}>- {nodeId}</li>)
+                    ) : (
+                      <li>- None highlighted in this view</li>
+                    )}
+                  </ul>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.16em] text-muted">
+                    Suspicious
+                  </p>
+                  <ul className="mt-3 space-y-2 text-sm text-muted">
+                    {graph.suspicious_cluster_ids.length ? (
+                      graph.suspicious_cluster_ids.map((nodeId) => <li key={nodeId}>- {nodeId}</li>)
+                    ) : (
+                      <li>- None in current snapshot slice</li>
+                    )}
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -94,11 +114,11 @@ export default async function IncidentGraphPage({
   );
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
+function SignalRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[24px] border border-line/70 bg-paper/75 p-5">
-      <p className="text-xs uppercase tracking-[0.18em] text-muted">{label}</p>
-      <p className="mt-3 font-serif text-3xl text-ink">{value}</p>
+    <div className="flex items-center justify-between gap-6 py-3 text-sm">
+      <dt className="text-muted">{label}</dt>
+      <dd className="text-right font-medium text-ink">{value}</dd>
     </div>
   );
 }

@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from "react";
 import cytoscape from "cytoscape";
-import { Maximize2, Minimize2, Pause, Play, StepForward } from "lucide-react";
+import { Maximize2, Minimize2, Pause, Play, RotateCcw, StepForward } from "lucide-react";
 import { useTheme } from "next-themes";
 
 import type { GraphResponse } from "@/lib/types";
@@ -13,23 +13,15 @@ type CytoscapeGraphProps = {
 };
 
 type GraphSelection =
-  | {
-      kind: "node";
-      id: string;
-      label: string;
-      role: string;
-      connectedCount: number;
-      visibleNeighbors: number;
-    }
-  | {
-      kind: "edge";
-      id: string;
-      source: string;
-      target: string;
-      amount: string;
-      timestamp: string;
-      relationship: string;
-    };
+  {
+    kind: "edge";
+    id: string;
+    source: string;
+    target: string;
+    amount: string;
+    timestamp: string;
+    relationship: string;
+  };
 
 type EdgeHoverState = {
   id: string;
@@ -39,21 +31,17 @@ type EdgeHoverState = {
   top: number;
 };
 
-type NodeHoverState = {
-  id: string;
-  label: string;
-  left: number;
-  top: number;
-};
-
 export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphProps) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const placeholderRef = useRef<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const replayPanelRef = useRef<HTMLDivElement | null>(null);
   const cytoscapeRef = useRef<any>(null);
   const clampViewportRef = useRef<(() => void) | null>(null);
   const hoveredEdgeIdRef = useRef<string | null>(null);
   const replayTimerRef = useRef<number | null>(null);
+  const replayResizeRafRef = useRef<number | null>(null);
+  const isResizingReplayPanelRef = useRef(false);
   const isClampingRef = useRef(false);
   const { resolvedTheme } = useTheme();
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -62,10 +50,11 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
   const [placeholderHeight, setPlaceholderHeight] = useState<number | null>(null);
   const [selection, setSelection] = useState<GraphSelection | null>(null);
   const [hoveredEdge, setHoveredEdge] = useState<EdgeHoverState | null>(null);
-  const [hoveredNode, setHoveredNode] = useState<NodeHoverState | null>(null);
   const [isReplaying, setIsReplaying] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [activeStepIndex, setActiveStepIndex] = useState(-1);
+  const [isReplayPanelOpen, setIsReplayPanelOpen] = useState(false);
+  const [replayPanelWidth, setReplayPanelWidth] = useState(544);
 
   const TRANSITION_MS = 320;
   const REPLAY_STEP_MS = 600;
@@ -76,6 +65,12 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
   const replayStatusLabel = replayEnabled
     ? `${Math.max(activeStepIndex + 1, 0)} of ${replaySteps.length} transfers`
     : null;
+
+  useEffect(() => {
+    if (!enableReplay) {
+      setIsReplayPanelOpen(false);
+    }
+  }, [enableReplay]);
 
   const handleRefocus = () => {
     if (cytoscapeRef.current) {
@@ -115,6 +110,12 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
     setActiveStepIndex((current) => Math.min(current + 1, replaySteps.length - 1));
   };
 
+  const resetReplay = () => {
+    setIsReplaying(false);
+    setIsPaused(false);
+    setActiveStepIndex(-1);
+  };
+
   const fitGraphSoon = () => {
     window.setTimeout(() => {
       if (cytoscapeRef.current) {
@@ -123,6 +124,49 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
         clampViewportRef.current?.();
       }
     }, TRANSITION_MS + 20);
+  };
+
+  const handleReplayResizeStart = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    if (!replayPanelRef.current) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    isResizingReplayPanelRef.current = true;
+    const panelRect = replayPanelRef.current.getBoundingClientRect();
+
+    const onPointerMove = (moveEvent: PointerEvent) => {
+      if (!replayPanelRef.current) {
+        return;
+      }
+
+      const wrapperWidth = wrapperRef.current?.clientWidth ?? window.innerWidth;
+      const minimumWidth = 360;
+      const maximumWidth = Math.min(760, wrapperWidth - 32);
+      const nextWidth = clampNumber(moveEvent.clientX - panelRect.left, minimumWidth, maximumWidth);
+
+      if (replayResizeRafRef.current) {
+        window.cancelAnimationFrame(replayResizeRafRef.current);
+      }
+
+      replayResizeRafRef.current = window.requestAnimationFrame(() => {
+        setReplayPanelWidth(nextWidth);
+      });
+    };
+
+    const onPointerUp = () => {
+      isResizingReplayPanelRef.current = false;
+      if (replayResizeRafRef.current) {
+        window.cancelAnimationFrame(replayResizeRafRef.current);
+        replayResizeRafRef.current = null;
+      }
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+    };
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
   };
 
   const enterFullscreen = () => {
@@ -202,12 +246,20 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
     {
       selector: "node",
       style: {
-        label: "",
+        label: isFullscreen ? "data(label)" : "",
         "background-color": "#f8fafc",
         "border-width": "2px",
         "border-color": "#cbd5e1",
-        width: 56,
-        height: 56,
+        width: isFullscreen ? 106 : 56,
+        height: isFullscreen ? 106 : 56,
+        "font-size": isFullscreen ? "15px" : "0px",
+        "font-weight": 700,
+        color: isFullscreen ? "#e2e8f0" : "#0f172a",
+        "text-wrap": isFullscreen ? "wrap" : "none",
+        "text-max-width": isFullscreen ? 88 : 0,
+        "text-valign": "center",
+        "text-halign": "center",
+        "text-outline-width": 0,
       },
     },
     {
@@ -337,21 +389,57 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
       },
     },
     {
-      selector: "edge.replay-traversed",
+      selector: "edge.replay-traversed-low",
       style: {
         width: "4px",
         opacity: 0.82,
-        "line-color": "#ea580c",
-        "target-arrow-color": "#ea580c",
+        "line-color": "#60a5fa",
+        "target-arrow-color": "#60a5fa",
       },
     },
     {
-      selector: "edge.replay-active",
+      selector: "edge.replay-traversed-medium",
+      style: {
+        width: "4px",
+        opacity: 0.82,
+        "line-color": "#fb923c",
+        "target-arrow-color": "#fb923c",
+      },
+    },
+    {
+      selector: "edge.replay-traversed-high",
+      style: {
+        width: "4px",
+        opacity: 0.9,
+        "line-color": "#f43f5e",
+        "target-arrow-color": "#f43f5e",
+      },
+    },
+    {
+      selector: "edge.replay-active-low",
       style: {
         width: "7px",
         opacity: 1,
         "line-color": "#2563eb",
         "target-arrow-color": "#2563eb",
+      },
+    },
+    {
+      selector: "edge.replay-active-medium",
+      style: {
+        width: "7px",
+        opacity: 1,
+        "line-color": "#f97316",
+        "target-arrow-color": "#f97316",
+      },
+    },
+    {
+      selector: "edge.replay-active-high",
+      style: {
+        width: "7px",
+        opacity: 1,
+        "line-color": "#ef4444",
+        "target-arrow-color": "#ef4444",
       },
     },
     {
@@ -374,12 +462,20 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
     {
       selector: "node",
       style: {
-        label: "",
+        label: isFullscreen ? "data(label)" : "",
         "background-color": "#334155",
         "border-width": "2px",
         "border-color": "#475569",
-        width: 64,
-        height: 64,
+        width: isFullscreen ? 106 : 56,
+        height: isFullscreen ? 106 : 56,
+        "font-size": isFullscreen ? "15px" : "0px",
+        "font-weight": 700,
+        color: "#f8fafc",
+        "text-wrap": isFullscreen ? "wrap" : "none",
+        "text-max-width": isFullscreen ? 88 : 0,
+        "text-valign": "center",
+        "text-halign": "center",
+        "text-outline-width": 0,
       },
     },
     {
@@ -509,7 +605,16 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
       },
     },
     {
-      selector: "edge.replay-traversed",
+      selector: "edge.replay-traversed-low",
+      style: {
+        width: "4px",
+        opacity: 0.82,
+        "line-color": "#93c5fd",
+        "target-arrow-color": "#93c5fd",
+      },
+    },
+    {
+      selector: "edge.replay-traversed-medium",
       style: {
         width: "4px",
         opacity: 0.82,
@@ -518,12 +623,39 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
       },
     },
     {
-      selector: "edge.replay-active",
+      selector: "edge.replay-traversed-high",
+      style: {
+        width: "4px",
+        opacity: 0.92,
+        "line-color": "#fb7185",
+        "target-arrow-color": "#fb7185",
+      },
+    },
+    {
+      selector: "edge.replay-active-low",
       style: {
         width: "7px",
         opacity: 1,
         "line-color": "#60a5fa",
         "target-arrow-color": "#60a5fa",
+      },
+    },
+    {
+      selector: "edge.replay-active-medium",
+      style: {
+        width: "7px",
+        opacity: 1,
+        "line-color": "#fb923c",
+        "target-arrow-color": "#fb923c",
+      },
+    },
+    {
+      selector: "edge.replay-active-high",
+      style: {
+        width: "7px",
+        opacity: 1,
+        "line-color": "#f87171",
+        "target-arrow-color": "#f87171",
       },
     },
     {
@@ -624,37 +756,7 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
       setHoveredEdge(buildEdgeHoverState(edge));
     };
 
-    instance.on("tap", "node", (event) => {
-      const node = event.target;
-      instance.$(":selected").unselect();
-      node.select();
-      setSelection({
-        kind: "node",
-        id: String(node.id()),
-        label: String(node.data("label") ?? node.id()),
-        role: describeNodeRole(node.classes()),
-        connectedCount: node.connectedEdges().length,
-        visibleNeighbors: node.neighborhood("node").length,
-      });
-    });
-
-    instance.on("mouseover", "node", (event) => {
-      const node = event.target;
-      const position = node.renderedPosition();
-      setHoveredNode({
-        id: String(node.id()),
-        label: String(node.data("label") ?? node.id()),
-        left: clampNumber(position.x - 70, 12, Math.max(12, (containerRef.current?.clientWidth ?? 0) - 152)),
-        top: Math.max(12, position.y - 54),
-      });
-    });
-
-    instance.on("mouseout", "node", () => {
-      setHoveredNode(null);
-    });
-
-    instance.on("tap", "edge", (event) => {
-      const edge = event.target;
+    const selectEdge = (edge: any) => {
       instance.$(":selected").unselect();
       edge.select();
       setSelection({
@@ -666,23 +768,40 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
         timestamp: String(edge.data("timestamp") ?? "Time unavailable"),
         relationship: String(edge.data("label") ?? "Transfer"),
       });
+    };
+
+    instance.on("tap", "edge", (event) => {
+      selectEdge(event.target);
+    });
+
+    instance.on("click", "edge", (event) => {
+      selectEdge(event.target);
     });
 
     instance.on("tap", (event) => {
       if (event.target === instance) {
         instance.$(":selected").unselect();
         setSelection(null);
-        setHoveredNode(null);
       }
     });
 
-    instance.on("mouseover", "edge", (event) => {
-      const edge = event.target;
-      hoveredEdgeIdRef.current = String(edge.id());
-      setHoveredEdge(buildEdgeHoverState(edge));
+    instance.on("mousemove", (event) => {
+      const target = event.target;
+
+      if (target === instance) {
+        hoveredEdgeIdRef.current = null;
+        setHoveredEdge(null);
+        return;
+      }
+
+      if (typeof target?.isEdge === "function" && target.isEdge()) {
+        hoveredEdgeIdRef.current = String(target.id());
+        setHoveredEdge(buildEdgeHoverState(target));
+        return;
+      }
     });
 
-    instance.on("mouseout", "edge", () => {
+    instance.on("mouseout", () => {
       hoveredEdgeIdRef.current = null;
       setHoveredEdge(null);
     });
@@ -748,7 +867,14 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
     };
 
     clampViewportRef.current = clampToViewport;
-    instance.on("pan zoom resize", () => {
+    instance.on("pan", () => {
+      if (isFullscreen) {
+        clampToViewport();
+      }
+      syncHoveredEdge();
+    });
+
+    instance.on("zoom resize", () => {
       clampToViewport();
       syncHoveredEdge();
     });
@@ -763,7 +889,6 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
       isClampingRef.current = false;
       setSelection(null);
       setHoveredEdge(null);
-      setHoveredNode(null);
       instance.destroy();
     };
   }, [graph, isFullscreen, resolvedTheme]);
@@ -821,6 +946,9 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
       if (replayTimerRef.current) {
         window.clearTimeout(replayTimerRef.current);
       }
+      if (replayResizeRafRef.current) {
+        window.cancelAnimationFrame(replayResizeRafRef.current);
+      }
     };
   }, []);
 
@@ -864,8 +992,10 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
       <div
         ref={wrapperRef}
         style={isFullscreen ? overlayStyle ?? undefined : undefined}
-        className={`relative overflow-hidden rounded-[24px] border border-line/70 bg-[#fffdf9] shadow-frame transition-[top,left,width,height,border-radius,box-shadow] duration-300 ease-out dark:bg-[#1b2638] ${
-          isFullscreen ? "z-[60] rounded-[28px] shadow-[0_28px_90px_rgba(0,0,0,0.42)]" : ""
+        className={`relative overflow-hidden transition-[top,left,width,height,border-radius,box-shadow,border-color,background-color] duration-300 ease-out ${
+          isFullscreen
+            ? "z-[60] rounded-[28px] border-transparent bg-transparent shadow-none"
+            : ""
         }`}
       >
         <div
@@ -873,16 +1003,68 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
           className={`w-full ${isFullscreen ? "h-full min-h-[calc(100vh-2rem)]" : "h-[520px]"}`}
         />
         {enableReplay ? (
-          <div className="absolute top-4 left-4 z-20 max-w-[min(32rem,calc(100%-6rem))] rounded-[18px] border border-line/80 bg-canvas/92 p-3 shadow-frame backdrop-blur">
-            {replayEnabled ? (
-              <div className="space-y-3">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.16em] text-muted">Replay money flow</p>
-                    <p className="mt-1 text-sm text-muted">
-                      {replayStatusLabel} · {currentReplayStep ? currentReplayStep.timestamp : "Static graph"}
-                    </p>
+          <div className="absolute top-4 left-4 z-20 max-w-[min(calc(100%-6rem),42rem)]">
+            <div
+              className={`group inline-flex items-center gap-3 rounded-full border border-line/80 bg-canvas/88 px-4 py-3 text-left shadow-frame backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:bg-canvas ${
+                isReplayPanelOpen ? "pointer-events-none opacity-0 scale-95" : "opacity-100 scale-100"
+              }`}
+            >
+              <button
+                type="button"
+                onClick={startReplay}
+                disabled={!replayEnabled}
+                className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-paper text-ink transition hover:bg-canvas disabled:cursor-not-allowed disabled:opacity-50"
+                aria-label={isPaused ? "Resume replay" : "Start replay"}
+              >
+                <Play className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsReplayPanelOpen(true)}
+                className="min-w-0 text-left"
+              >
+                <span className="block text-xs uppercase tracking-[0.16em] text-muted">
+                  Replay money flow
+                </span>
+                <span className="mt-1 block text-sm text-ink">
+                  {replayEnabled ? replayStatusLabel : "Timeline unavailable"}
+                </span>
+              </button>
+            </div>
+
+            <div
+              ref={replayPanelRef}
+              className={`relative origin-top-left rounded-[22px] border border-line/80 bg-canvas/92 p-4 shadow-frame backdrop-blur transition-all duration-300 ease-out ${
+                isReplayPanelOpen
+                  ? "pointer-events-auto translate-y-0 scale-100 opacity-100"
+                  : "pointer-events-none -translate-y-3 scale-95 opacity-0"
+              }`}
+              style={{
+                width: `min(${Math.round(replayPanelWidth)}px, calc(100vw - 4rem), calc(100% - 1rem))`,
+                transitionProperty: isResizingReplayPanelRef.current
+                  ? "transform, opacity"
+                  : "width, transform, opacity",
+              }}
+            >
+              {replayEnabled ? (
+                <div className="space-y-4">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.16em] text-muted">Replay money flow</p>
+                      <p className="mt-1 text-sm text-muted">
+                        {replayStatusLabel} · {currentReplayStep ? currentReplayStep.timestamp : "Static graph"}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsReplayPanelOpen(false)}
+                      className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3 py-2 text-sm text-ink transition hover:bg-canvas"
+                    >
+                      <Minimize2 className="h-4 w-4" />
+                      Minimize
+                    </button>
                   </div>
+
                   <div className="flex flex-wrap items-center gap-2">
                     <button
                       type="button"
@@ -909,38 +1091,66 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
                       <StepForward className="h-4 w-4" />
                       Step
                     </button>
+                    <button
+                      type="button"
+                      onClick={resetReplay}
+                      className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3 py-2 text-sm text-ink transition hover:bg-canvas"
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                      Reset
+                    </button>
                   </div>
-                </div>
 
-                <div>
-                  <input
-                    type="range"
-                    min={0}
-                    max={Math.max(replaySteps.length - 1, 0)}
-                    step={1}
-                    value={Math.max(activeStepIndex, 0)}
-                    onChange={(event) => {
-                      setIsReplaying(false);
-                      setIsPaused(true);
-                      setActiveStepIndex(Number(event.target.value));
-                    }}
-                    className="h-2 w-full cursor-pointer appearance-none rounded-full bg-line accent-[#2563eb]"
-                  />
-                  <div className="mt-2 flex items-center justify-between gap-3 text-xs text-muted">
-                    <span>{replaySteps[0]?.timestamp}</span>
-                    <span>{currentReplayStep?.timestamp ?? replaySteps[0]?.timestamp}</span>
-                    <span>{replaySteps[replaySteps.length - 1]?.timestamp}</span>
+                  <div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={Math.max(replaySteps.length - 1, 0)}
+                      step={1}
+                      value={Math.max(activeStepIndex, 0)}
+                      onChange={(event) => {
+                        setIsReplaying(false);
+                        setIsPaused(true);
+                        setActiveStepIndex(Number(event.target.value));
+                      }}
+                      className="h-2 w-full cursor-pointer appearance-none rounded-full bg-line accent-[#2563eb]"
+                    />
+                    <div className="mt-2 flex items-center justify-between gap-3 text-xs text-muted">
+                      <span>{replaySteps[0]?.timestamp}</span>
+                      <span>{currentReplayStep?.timestamp ?? replaySteps[0]?.timestamp}</span>
+                      <span>{replaySteps[replaySteps.length - 1]?.timestamp}</span>
+                    </div>
+                  </div>
+
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.16em] text-muted">Replay money flow</p>
+                      <p className="mt-1 text-sm text-muted">
+                        Replay becomes available when this graph has at least 3 timestamped transfers.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setIsReplayPanelOpen(false)}
+                      className="inline-flex items-center gap-2 rounded-full border border-line bg-paper px-3 py-2 text-sm text-ink transition hover:bg-canvas"
+                    >
+                      <Minimize2 className="h-4 w-4" />
+                      Minimize
+                    </button>
                   </div>
                 </div>
-              </div>
-            ) : (
-              <div>
-                <p className="text-xs uppercase tracking-[0.16em] text-muted">Replay money flow</p>
-                <p className="mt-1 text-sm text-muted">
-                  Replay becomes available when this graph has at least 3 timestamped transfers.
-                </p>
-              </div>
-            )}
+              )}
+              <button
+                type="button"
+                onPointerDown={handleReplayResizeStart}
+                className="absolute bottom-2 right-2 h-5 w-5 cursor-ew-resize rounded-full border border-line/70 bg-paper/90 text-transparent shadow-sm transition hover:bg-canvas"
+                aria-label="Resize replay panel"
+                title="Drag to resize"
+              />
+            </div>
           </div>
         ) : null}
         {hoveredEdge ? (
@@ -955,54 +1165,25 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
             <p className="mt-1 text-muted">{hoveredEdge.timestamp}</p>
           </div>
         ) : null}
-        {hoveredNode ? (
-          <div
-            className="pointer-events-none absolute z-20 rounded-[12px] border border-line/80 bg-canvas/94 px-3 py-2 text-xs font-semibold text-ink shadow-frame backdrop-blur"
-            style={{
-              left: hoveredNode.left,
-              top: hoveredNode.top,
-            }}
-          >
-            {hoveredNode.label}
-          </div>
-        ) : null}
         {selection ? (
           <div className="absolute bottom-4 left-4 z-20 max-w-[20rem] rounded-[18px] border border-line/80 bg-canvas/92 p-4 text-sm shadow-frame backdrop-blur">
-            {selection.kind === "node" ? (
-              <>
-                <p className="text-xs uppercase tracking-[0.16em] text-muted">Selected node</p>
-                <p className="mt-2 font-semibold text-ink">{selection.label}</p>
-                <p className="mt-1 text-muted">{selection.role}</p>
-                <dl className="mt-4 space-y-2">
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-muted">Connected edges</dt>
-                    <dd className="text-ink">{selection.connectedCount}</dd>
-                  </div>
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-muted">Visible neighbors</dt>
-                    <dd className="text-ink">{selection.visibleNeighbors}</dd>
-                  </div>
-                </dl>
-              </>
-            ) : (
-              <>
-                <p className="text-xs uppercase tracking-[0.16em] text-muted">Selected edge</p>
-                <p className="mt-2 font-semibold text-ink">
-                  {selection.source} {"->"} {selection.target}
-                </p>
-                <p className="mt-1 text-muted">{selection.relationship}</p>
-                <dl className="mt-4 space-y-2">
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-muted">Amount</dt>
-                    <dd className="text-ink">{selection.amount}</dd>
-                  </div>
-                  <div className="flex justify-between gap-4">
-                    <dt className="text-muted">Time</dt>
-                    <dd className="text-ink">{selection.timestamp}</dd>
-                  </div>
-                </dl>
-              </>
-            )}
+            <>
+              <p className="text-xs uppercase tracking-[0.16em] text-muted">Selected edge</p>
+              <p className="mt-2 font-semibold text-ink">
+                {selection.source} {"->"} {selection.target}
+              </p>
+              <p className="mt-1 text-muted">{selection.relationship}</p>
+              <dl className="mt-4 space-y-2">
+                <div className="flex justify-between gap-4">
+                  <dt className="text-muted">Amount</dt>
+                  <dd className="text-ink">{selection.amount}</dd>
+                </div>
+                <div className="flex justify-between gap-4">
+                  <dt className="text-muted">Time</dt>
+                  <dd className="text-ink">{selection.timestamp}</dd>
+                </div>
+              </dl>
+            </>
           </div>
         ) : null}
         <div className="absolute top-4 right-4 flex items-center gap-2">
@@ -1019,15 +1200,16 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
                 Esc
               </span>
             </button>
-          ) : null}
-          <button
-            onClick={isFullscreen ? exitFullscreen : enterFullscreen}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-canvas/70 text-ink transition-colors hover:bg-paper dark:bg-surface/70 dark:text-ink dark:hover:bg-surface"
-            aria-label={isFullscreen ? "Exit full screen" : "Open full screen"}
-            title={isFullscreen ? "Exit full screen" : "Open full screen"}
-          >
-            {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
-          </button>
+          ) : (
+            <button
+              onClick={enterFullscreen}
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-line bg-canvas/70 text-ink transition-colors hover:bg-paper dark:bg-surface/70 dark:text-ink dark:hover:bg-surface"
+              aria-label="Open full screen"
+              title="Open full screen"
+            >
+              <Maximize2 className="h-4 w-4" />
+            </button>
+          )}
         </div>
       </div>
     </>
@@ -1040,6 +1222,7 @@ type ReplayStep = {
   target: string;
   timestamp: string;
   parsedTime: number;
+  replayLevel: "low" | "medium" | "high";
 };
 
 function buildReplaySteps(graph: GraphResponse): ReplayStep[] {
@@ -1055,6 +1238,7 @@ function buildReplaySteps(graph: GraphResponse): ReplayStep[] {
         target: String(data.target ?? ""),
         timestamp,
         parsedTime,
+        replayLevel: replayLevelForClasses(String(edge.classes ?? "")),
         index,
       };
     })
@@ -1066,7 +1250,11 @@ function buildReplaySteps(graph: GraphResponse): ReplayStep[] {
 }
 
 function applyReplayClasses(instance: any, replaySteps: ReplayStep[], activeStepIndex: number) {
-  instance.elements().removeClass("replay-active replay-traversed replay-node-active replay-node-target");
+  instance
+    .elements()
+    .removeClass(
+      "replay-active-low replay-active-medium replay-active-high replay-traversed-low replay-traversed-medium replay-traversed-high replay-node-active replay-node-target",
+    );
 
   if (activeStepIndex < 0 || !replaySteps.length) {
     return;
@@ -1078,7 +1266,11 @@ function applyReplayClasses(instance: any, replaySteps: ReplayStep[], activeStep
       return;
     }
 
-    edge.addClass(index === activeStepIndex ? "replay-active" : "replay-traversed");
+    edge.addClass(
+      index === activeStepIndex
+        ? `replay-active-${step.replayLevel}`
+        : `replay-traversed-${step.replayLevel}`,
+    );
 
     const sourceNode = instance.getElementById(step.source);
     const targetNode = instance.getElementById(step.target);
@@ -1093,6 +1285,16 @@ function applyReplayClasses(instance: any, replaySteps: ReplayStep[], activeStep
       }
     }
   });
+}
+
+function replayLevelForClasses(classes: string): "low" | "medium" | "high" {
+  if (classes.includes("highlighted") || classes.includes("suspicious")) {
+    return "high";
+  }
+  if (classes.includes("branch") || classes.includes("recipient")) {
+    return "medium";
+  }
+  return "low";
 }
 
 function formatEdgeAmount(amount: unknown, fallbackLabel: unknown) {
@@ -1116,23 +1318,4 @@ function formatEdgeAmount(amount: unknown, fallbackLabel: unknown) {
 
 function clampNumber(value: number, minimum: number, maximum: number) {
   return Math.min(Math.max(value, minimum), maximum);
-}
-
-function describeNodeRole(classes: string) {
-  if (classes.includes("cashout")) {
-    return "Cash-out endpoint";
-  }
-  if (classes.includes("suspicious")) {
-    return "Suspicious entity";
-  }
-  if (classes.includes("recipient")) {
-    return "Recipient / bridge node";
-  }
-  if (classes.includes("safe")) {
-    return "Trusted connected account";
-  }
-  if (classes.includes("source")) {
-    return "Origin account";
-  }
-  return "Connected account";
 }

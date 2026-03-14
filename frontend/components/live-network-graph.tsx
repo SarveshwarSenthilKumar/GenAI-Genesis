@@ -4,8 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import { Maximize2, ZoomIn, ZoomOut, Move } from "lucide-react";
 import type { LiveMonitorGraph } from "@/lib/types";
 
-const WIDTH = 800;
-const HEIGHT = 420;
+const WIDTH = 1200;
+const HEIGHT = 640;
+const DEFAULT_ZOOM = 1.1;
+const MIN_ZOOM = 0.85;
+const MAX_ZOOM = 2.4;
 const KIND_FILL: Record<string, string> = {
   account: "#16805d",
   mule: "#d98a1b",
@@ -26,14 +29,14 @@ const KIND_BORDER: Record<string, string> = {
 
 export function LiveNetworkGraph({ graph }: { graph: LiveMonitorGraph }) {
   const svgRef = useRef<SVGSVGElement>(null);
-  const [zoomLevel, setZoomLevel] = useState(1);
+  const [zoomLevel, setZoomLevel] = useState(DEFAULT_ZOOM);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   if (!graph.nodes.length) {
     return (
-      <div className="flex h-[420px] items-center justify-center rounded-[24px] border border-line/70 bg-paper/70 text-sm text-muted">
+      <div className="flex h-[640px] items-center justify-center rounded-[24px] border border-line/70 bg-paper/70 text-sm text-muted">
         Waiting for enough suspicious activity to build a focused entity graph.
       </div>
     );
@@ -41,7 +44,7 @@ export function LiveNetworkGraph({ graph }: { graph: LiveMonitorGraph }) {
 
   const centerX = WIDTH / 2;
   const centerY = HEIGHT / 2;
-  const radius = Math.min(WIDTH, HEIGHT) * 0.33;
+  const radius = Math.min(WIDTH, HEIGHT) * 0.39;
 
   const positionedNodes = graph.nodes.map((node, index) => {
     const angle = (Math.PI * 2 * index) / Math.max(graph.nodes.length, 1);
@@ -62,15 +65,15 @@ export function LiveNetworkGraph({ graph }: { graph: LiveMonitorGraph }) {
   });
 
   const handleZoomIn = () => {
-    setZoomLevel(prev => Math.min(prev * 1.2, 3));
+    setZoomLevel(prev => Math.min(prev * 1.15, MAX_ZOOM));
   };
 
   const handleZoomOut = () => {
-    setZoomLevel(prev => Math.max(prev * 0.8, 0.3));
+    setZoomLevel(prev => Math.max(prev * 0.9, MIN_ZOOM));
   };
 
   const handleRefocus = () => {
-    setZoomLevel(1);
+    setZoomLevel(DEFAULT_ZOOM);
     setPan({ x: 0, y: 0 });
   };
 
@@ -97,19 +100,26 @@ export function LiveNetworkGraph({ graph }: { graph: LiveMonitorGraph }) {
   };
 
   const handleWheel = (e: React.WheelEvent<SVGSVGElement>) => {
+    if (!e.ctrlKey && !e.metaKey) {
+      return;
+    }
     e.preventDefault();
     const delta = e.deltaY > 0 ? 0.9 : 1.1;
-    setZoomLevel(prev => Math.max(0.3, Math.min(3, prev * delta)));
+    setZoomLevel(prev => Math.max(MIN_ZOOM, Math.min(MAX_ZOOM, prev * delta)));
   };
 
   const nodeMap = Object.fromEntries(positionedNodes.map((node) => [node.id, node]));
+  const centeredPan = {
+    x: pan.x + (WIDTH - WIDTH * zoomLevel) / 2,
+    y: pan.y + (HEIGHT - HEIGHT * zoomLevel) / 2,
+  };
 
   return (
     <div className="relative">
       <svg
         ref={svgRef}
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-        className="h-[420px] w-full rounded-[24px] border border-line/70 bg-paper/70 cursor-move"
+        className="h-[640px] w-full rounded-[24px] border border-line/70 bg-paper/70"
         role="img"
         aria-label="Live entity graph"
         onMouseDown={handleMouseDown}
@@ -140,7 +150,7 @@ export function LiveNetworkGraph({ graph }: { graph: LiveMonitorGraph }) {
           </filter>
         </defs>
         
-        <g transform={`translate(${pan.x}, ${pan.y}) scale(${zoomLevel})`}>
+        <g transform={`translate(${centeredPan.x}, ${centeredPan.y}) scale(${zoomLevel})`}>
           <rect width={WIDTH} height={HEIGHT} fill="url(#monitor-grid)" />
 
       {graph.edges.map((edge, index) => {
@@ -300,16 +310,21 @@ export function LiveNetworkGraph({ graph }: { graph: LiveMonitorGraph }) {
         </button>
         <button
           onClick={handleRefocus}
-          className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-300 dark:border-slate-600 bg-white/70 dark:bg-slate-800/70 text-slate-600 dark:text-slate-400 transition-colors hover:bg-slate-100 dark:hover:bg-slate-700"
-          aria-label="Refocus graph"
-          title="Refocus graph"
+          className="flex h-8 items-center justify-center gap-1 rounded-lg border border-slate-300 dark:border-slate-600 bg-white/70 dark:bg-slate-800/70 px-3 text-slate-600 dark:text-slate-400 transition-colors hover:bg-slate-100 dark:hover:bg-slate-700"
+          aria-label="Center graph"
+          title="Center graph"
         >
           <Maximize2 className="h-3 w-3" />
+          <span className="text-xs font-medium">Center</span>
         </button>
       </div>
 
       <div className="absolute bottom-4 left-4 rounded-lg border border-slate-300 dark:border-slate-600 bg-white/70 dark:bg-slate-800/70 px-3 py-2 text-xs text-slate-600 dark:text-slate-400">
         Zoom: {Math.round(zoomLevel * 100)}%
+      </div>
+
+      <div className="absolute bottom-4 left-28 rounded-lg border border-slate-300 dark:border-slate-600 bg-white/70 dark:bg-slate-800/70 px-3 py-2 text-xs text-slate-600 dark:text-slate-400">
+        Scroll page normally. Hold Ctrl/Cmd + wheel to zoom graph.
       </div>
       
       <div className="absolute top-4 left-4 rounded-lg border border-slate-300 dark:border-slate-600 bg-white/70 dark:bg-slate-800/70 px-3 py-2 text-xs text-slate-600 dark:text-slate-400">

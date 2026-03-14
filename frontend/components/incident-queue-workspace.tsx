@@ -371,88 +371,80 @@ export function IncidentQueueWorkspace({
 
   return (
     <div className="relative space-y-4">
-      <section className="rounded-[24px] border border-line/45 bg-surface/84 px-4 py-4 shadow-frame backdrop-blur sm:px-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div>
-            <p className="text-xs uppercase tracking-[0.24em] text-muted">
-              Analyst queue
-            </p>
-            <h1 className="mt-2 font-serif text-3xl leading-none text-ink">
-              Incident dashboard
-            </h1>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2 text-sm">
-            <StatusPill>{isLive ? "Live stream" : "Stream paused"}</StatusPill>
-            <StatusPill>
-              {queue.generated_at
-                ? `Updated ${new Date(queue.generated_at).toLocaleTimeString()}`
-                : "Queue warming up"}
-            </StatusPill>
-            <StatusPill>{queue.stats.monitored_transactions} monitored</StatusPill>
-            <StatusPill>{queue.stats.average_latency_ms} ms latency</StatusPill>
-            {pendingQueue ? (
-              <StatusPill>{pendingThreatCount || "New"} waiting</StatusPill>
-            ) : null}
-            <button
-              type="button"
-              onClick={() => setIsLive((current) => !current)}
-              className={`rounded-full border px-4 py-2 transition ${
-                isLive
-                  ? "border-ink bg-ink text-canvas"
-                  : "border-line bg-canvas text-ink hover:bg-paper"
-              }`}
-            >
-              {isLive ? "Pause stream" : "Resume stream"}
-            </button>
-            {pendingQueue ? (
-              <button
-                type="button"
-                onClick={applyPendingQueue}
-                className="rounded-full border border-accent/60 bg-accent px-4 py-2 text-canvas transition hover:opacity-90"
-              >
-                Apply updates
-              </button>
-            ) : null}
-          </div>
-        </div>
-      </section>
-
       <section className="relative">
-        <div className="min-w-0 rounded-[30px] border border-line/55 bg-surface/94 p-4 shadow-frame backdrop-blur sm:p-5">
-          <div className="flex flex-wrap items-start justify-between gap-4 border-b border-line/45 pb-4">
+        <div className="min-w-0 rounded-[30px] border border-line/45 bg-surface/90 p-4 shadow-frame backdrop-blur sm:p-5">
+          <div className="flex flex-wrap items-start justify-between gap-5 pb-4">
             <div>
               <p className="text-xs uppercase tracking-[0.24em] text-muted">
-                Prioritized by risk
+                Analyst queue
               </p>
-              <h2 className="mt-2 font-serif text-3xl text-ink">Incident queue</h2>
+              <h1 className="mt-2 font-serif text-3xl text-ink">Incident dashboard</h1>
+              <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
+                Live screening, prioritization, and triage in one workspace.
+              </p>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <SummaryMetric
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <StatusPill>{isLive ? "Live stream" : "Stream paused"}</StatusPill>
+              <StatusPill>
+                {queue.generated_at
+                  ? `Updated ${new Date(queue.generated_at).toLocaleTimeString()}`
+                  : "Queue warming up"}
+              </StatusPill>
+              <StatusPill>{queue.stats.monitored_transactions} monitored</StatusPill>
+              <StatusPill>{queue.stats.average_latency_ms} ms latency</StatusPill>
+              {pendingQueue ? (
+                <StatusPill>{pendingThreatCount || "New"} waiting</StatusPill>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => setIsLive((current) => !current)}
+                className={`rounded-full border px-4 py-2 transition ${
+                  isLive
+                    ? "border-ink bg-ink text-canvas"
+                    : "border-line/60 text-ink hover:bg-paper/50"
+                }`}
+              >
+                {isLive ? "Pause stream" : "Resume stream"}
+              </button>
+              {pendingQueue ? (
+                <button
+                  type="button"
+                  onClick={applyPendingQueue}
+                  className="rounded-full border border-accent/60 bg-accent px-4 py-2 text-canvas transition hover:opacity-90"
+                >
+                  Apply updates
+                </button>
+              ) : null}
+            </div>
+          </div>
+
+          <div className="border-t border-line/35 pt-4">
+            <div className="grid gap-x-6 gap-y-3 sm:grid-cols-[repeat(auto-fit,minmax(8.5rem,1fr))]">
+              <InlineStat
                 label="Visible"
                 value={visibleIncidents.length.toString()}
                 tone="safe"
                 description="How many incidents are currently visible after the active filters and sort are applied."
               />
-              <SummaryMetric
+              <InlineStat
                 label="Blocked"
                 value={visibleSummary.blocked.toString()}
                 tone="block"
                 description="Incidents urgent enough that Sentinel recommends blocking the payment and escalating investigation."
               />
-              <SummaryMetric
+              <InlineStat
                 label="Hold"
                 value={visibleSummary.hold.toString()}
                 tone="review"
                 description="Incidents that should pause the payment until an analyst verifies the transaction."
               />
-              <SummaryMetric
+              <InlineStat
                 label="Review"
                 value={visibleSummary.review.toString()}
                 tone="review"
                 description="Incidents that need analyst review but are not severe enough to immediately hold or block."
               />
-              <SummaryMetric
+              <InlineStat
                 label="Volume"
                 value={currency.format(visibleSummary.volume)}
                 tone="safe"
@@ -461,7 +453,7 @@ export function IncidentQueueWorkspace({
             </div>
           </div>
 
-          <div className="mt-4 rounded-[22px] border border-line/50 bg-canvas/76 px-4 py-4">
+          <div className="mt-5 border-t border-line/35 pt-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-[0.18em] text-muted">
@@ -471,7 +463,7 @@ export function IncidentQueueWorkspace({
                   Keep the stream running and inject a known pattern to verify the model reacts the way you expect.
                 </p>
               </div>
-              <span className="rounded-full border border-line bg-paper px-3 py-2 text-xs uppercase tracking-[0.18em] text-muted">
+              <span className="rounded-full border border-line/60 px-3 py-2 text-xs uppercase tracking-[0.18em] text-muted">
                 {isInjectingScenario
                   ? "Injecting..."
                   : lastScenario
@@ -490,7 +482,7 @@ export function IncidentQueueWorkspace({
                       void injectScenario(scenario.key);
                     });
                   }}
-                  className="rounded-full border border-line bg-paper px-4 py-2 text-sm text-ink transition hover:bg-canvas disabled:cursor-wait disabled:opacity-60"
+                  className="rounded-full border border-line/60 px-4 py-2 text-sm text-ink transition hover:bg-paper/50 disabled:cursor-wait disabled:opacity-60"
                 >
                   {scenario.label}
                 </button>
@@ -498,7 +490,8 @@ export function IncidentQueueWorkspace({
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="mt-5 border-t border-line/35 pt-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex flex-wrap gap-2 text-sm">
               {[
                 ["all", "All"],
@@ -595,9 +588,10 @@ export function IncidentQueueWorkspace({
                 ))}
               </div>
             </div>
+            </div>
           </div>
 
-          <div className="mt-4 rounded-[22px] border border-line/50 bg-canvas/76 px-4 py-4">
+          <div className="mt-4 border-t border-line/35 pt-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <p className="text-xs uppercase tracking-[0.18em] text-muted">
@@ -620,7 +614,7 @@ export function IncidentQueueWorkspace({
                         minRisk: 0,
                       })
                     }
-                    className="rounded-full border border-line bg-paper px-4 py-2 text-sm text-ink transition hover:bg-canvas"
+                    className="rounded-full border border-line/60 px-4 py-2 text-sm text-ink transition hover:bg-paper/50"
                   >
                     Clear filters
                   </button>
@@ -631,7 +625,7 @@ export function IncidentQueueWorkspace({
                   className={`rounded-full border px-4 py-2 text-sm transition ${
                     isAdvancedOpen
                       ? "border-ink bg-ink text-canvas"
-                      : "border-line bg-paper text-ink hover:bg-canvas"
+                      : "border-line/60 text-ink hover:bg-paper/50"
                   }`}
                 >
                   {isAdvancedOpen ? "Hide advanced" : "Show advanced"}
@@ -734,7 +728,7 @@ export function IncidentQueueWorkspace({
           ) : null}
 
           <div className="mt-4 space-y-2.5">
-              {visibleIncidents.length ? (
+                  {visibleIncidents.length ? (
                 visibleIncidents.map((incident) => {
                 const selected = incident.incident_id === selectedIncidentId;
                 const injectedScenario =
@@ -750,7 +744,7 @@ export function IncidentQueueWorkspace({
                     className={`group w-full rounded-[22px] border px-4 py-3.5 text-left transition-all duration-200 ${
                       selected
                         ? "border-accent/60 bg-accent/8 shadow-[0_10px_30px_rgba(42,86,114,0.12)]"
-                        : "border-line/55 bg-canvas/78 hover:border-line hover:bg-canvas"
+                        : "border-line/45 bg-transparent hover:border-line/70 hover:bg-canvas/28"
                     }`}
                   >
                     <div className="flex flex-wrap items-start justify-between gap-4">
@@ -798,7 +792,7 @@ export function IncidentQueueWorkspace({
                         {incident.top_reasons.slice(0, 2).map((reason) => (
                           <span
                             key={reason}
-                            className="rounded-full border border-line/45 bg-surface/88 px-3 py-1 text-xs text-muted"
+                            className="rounded-full border border-line/35 px-3 py-1 text-xs text-muted"
                           >
                             {reason}
                           </span>
@@ -1096,13 +1090,13 @@ function PaginationButton({
 
 function StatusPill({ children }: { children: ReactNode }) {
   return (
-    <span className="rounded-full border border-line/40 bg-canvas/78 px-4 py-2 text-sm text-muted">
+    <span className="rounded-full border border-line/40 px-4 py-2 text-sm text-muted">
       {children}
     </span>
   );
 }
 
-function SummaryMetric({
+function InlineStat({
   label,
   value,
   tone,
@@ -1120,14 +1114,14 @@ function SummaryMetric({
   };
 
   return (
-    <div className="rounded-[22px] border border-slate-400/80 bg-canvas/88 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]">
-      <div className="flex items-center gap-2">
+    <div className="min-w-0">
+      <div className="flex items-start gap-2">
         <p className="text-[11px] uppercase tracking-[0.18em] text-muted">{label}</p>
-        <InfoBadge description={description} />
+        <div className="pt-0.5">
+          <InfoBadge description={description} />
+        </div>
       </div>
-      <p className={`mt-3 font-serif text-[2.1rem] leading-none ${toneMap[tone]}`}>
-        {value}
-      </p>
+      <p className={`mt-1 font-serif text-[1.9rem] leading-none ${toneMap[tone]}`}>{value}</p>
     </div>
   );
 }
