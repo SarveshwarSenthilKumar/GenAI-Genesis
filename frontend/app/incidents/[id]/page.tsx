@@ -102,7 +102,7 @@ export default async function IncidentDetailPage({
                 Open network exposure
               </Link>
               <Link
-                href="/"
+                href="/dashboard"
                 className="rounded-full border border-line px-5 py-3 text-ink transition hover:bg-paper"
               >
                 Back to queue

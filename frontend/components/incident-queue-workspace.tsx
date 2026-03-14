@@ -631,7 +631,7 @@ export function IncidentQueueWorkspace({
         <aside
           ref={panelRef}
           aria-hidden={!panelVisible}
-          className={`fixed inset-y-4 right-4 z-40 w-[min(94vw,42rem)] overflow-hidden rounded-[34px] border border-line/60 bg-elevated/97 shadow-[0_30px_90px_rgba(14,36,51,0.2)] backdrop-blur-xl transition-all duration-200 ease-out will-change-transform will-change-opacity transform-gpu ${
+          className={`fixed inset-y-4 right-4 z-40 w-[min(94vw,42rem)] overflow-visible rounded-[34px] border border-line/60 bg-elevated/97 shadow-[0_30px_90px_rgba(14,36,51,0.2)] backdrop-blur-xl transition-all duration-200 ease-out will-change-transform will-change-opacity transform-gpu ${
             panelVisible
               ? isClosingPanel
                 ? "pointer-events-none translate-x-4 opacity-0"
@@ -639,7 +639,7 @@ export function IncidentQueueWorkspace({
               : "pointer-events-none translate-x-4 opacity-0"
           }`}
         >
-          <div className="flex h-full max-h-[calc(100vh-2rem)] flex-col">
+          <div className="flex h-full max-h-[calc(100vh-2rem)] flex-col overflow-hidden rounded-[34px]">
             <div className="border-b border-line/45 bg-surface/82 px-5 py-5 sm:px-6">
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -925,7 +925,7 @@ function InfoBadge({ description }: { description: string }) {
       >
         i
       </span>
-      <span className="pointer-events-none absolute left-0 top-[calc(100%+0.45rem)] z-50 w-56 max-w-[min(18rem,calc(100vw-3rem))] rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-[12px] normal-case leading-5 text-slate-50 opacity-0 shadow-2xl transition-opacity duration-75 group-hover:opacity-100 group-focus-within:opacity-100">
+      <span className="pointer-events-none absolute right-0 top-[calc(100%+0.45rem)] z-50 w-56 max-w-[min(18rem,calc(100vw-3rem))] rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-[12px] normal-case leading-5 text-slate-50 opacity-0 shadow-2xl transition-opacity duration-75 group-hover:opacity-100 group-focus-within:opacity-100">
         {description}
       </span>
     </span>

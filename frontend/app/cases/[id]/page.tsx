@@ -93,7 +93,7 @@ export default async function CaseDetailPage({
                 Open graph view
               </Link>
               <Link
-                href="/"
+                href="/dashboard"
                 className="rounded-full border border-line px-5 py-3 text-ink transition hover:bg-paper"
               >
                 Back to dashboard

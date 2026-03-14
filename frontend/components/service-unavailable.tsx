@@ -15,7 +15,7 @@ export function ServiceUnavailable({
         <p className="mt-5 max-w-2xl text-lg leading-8 text-muted">{message}</p>
         <div className="mt-6 flex flex-wrap gap-3 text-sm">
           <Link
-            href="/"
+            href="/dashboard"
             className="rounded-full bg-ink px-5 py-3 text-paper transition hover:opacity-90"
           >
             Back to queue
