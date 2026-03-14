@@ -925,7 +925,7 @@ function InfoBadge({ description }: { description: string }) {
       >
         i
       </span>
-      <span className="pointer-events-none absolute left-1/2 top-[calc(100%+0.45rem)] z-50 w-56 -translate-x-1/2 rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-[12px] normal-case leading-5 text-slate-50 opacity-0 shadow-2xl transition-opacity duration-75 group-hover:opacity-100 group-focus-within:opacity-100">
+      <span className="pointer-events-none absolute left-0 top-[calc(100%+0.45rem)] z-50 w-56 max-w-[min(18rem,calc(100vw-3rem))] rounded-xl border border-slate-700 bg-slate-900 px-3 py-2 text-[12px] normal-case leading-5 text-slate-50 opacity-0 shadow-2xl transition-opacity duration-75 group-hover:opacity-100 group-focus-within:opacity-100">
         {description}
       </span>
     </span>
