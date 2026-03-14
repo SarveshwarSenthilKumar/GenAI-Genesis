@@ -106,3 +106,105 @@ export type TransactionChatResponse = {
   follow_ups: string[];
   mode: "gemini" | "fallback";
 };
+
+export type LiveAction = "allow" | "review" | "hold" | "block";
+
+export type LiveMonitorStats = {
+  transactions_monitored: number;
+  flagged_alerts: number;
+  suspicious_volume: number;
+  ring_clusters: number;
+  rules_triggered: number;
+  hot_country: string;
+  blocked_count: number;
+  held_count: number;
+  review_count: number;
+  allow_count: number;
+  transaction_scoring_latency_ms: number;
+  graph_update_latency_ms: number;
+  total_latency_ms: number;
+};
+
+export type LiveMonitorBreakdownItem = {
+  label: string;
+  value: number;
+};
+
+export type LiveMonitorWhyFlagged = {
+  transaction_anomaly_score: number;
+  rule_score: number;
+  network_risk_score: number;
+  final_risk: number;
+  severity: string;
+  action: LiveAction;
+  breakdown: LiveMonitorBreakdownItem[];
+  top_rule_reasons: string[];
+  top_network_evidence: string[];
+};
+
+export type LiveMonitorAlert = {
+  type: "transaction" | "ring";
+  alert_title: string;
+  transaction_id?: string | null;
+  cluster_id?: string | null;
+  sender_account?: string | null;
+  receiver_account?: string | null;
+  amount: number;
+  severity: string;
+  action: LiveAction;
+  final_risk: number;
+  transaction_anomaly_score: number;
+  rule_score: number;
+  network_risk_score: number;
+  rule_reasons: string[];
+  network_evidence: string[];
+  accounts_involved: string[];
+  suspicious_funds_total?: number | null;
+  why_flagged: LiveMonitorWhyFlagged;
+  explanation: string;
+};
+
+export type LiveMonitorTransactionRow = {
+  transaction_id: string;
+  timestamp: string;
+  sender_account: string;
+  receiver_account: string;
+  amount: number;
+  ip_country: string;
+  sender_txn_count_5m: number;
+  transaction_anomaly_score: number;
+  rule_score: number;
+  network_risk_score: number;
+  final_risk: number;
+  severity: string;
+  action: LiveAction;
+  transaction_type: string;
+};
+
+export type LiveMonitorGraphNode = {
+  id: string;
+  label: string;
+  kind: string;
+  risk: number;
+};
+
+export type LiveMonitorGraphEdge = {
+  source: string;
+  target: string;
+  amount: number;
+  risk: number;
+  label: string;
+};
+
+export type LiveMonitorGraph = {
+  nodes: LiveMonitorGraphNode[];
+  edges: LiveMonitorGraphEdge[];
+};
+
+export type LiveMonitorPayload = {
+  generated_at: string | null;
+  stats: LiveMonitorStats;
+  transactions: LiveMonitorTransactionRow[];
+  alerts: LiveMonitorAlert[];
+  graph: LiveMonitorGraph;
+};

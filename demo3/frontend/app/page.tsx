@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { RiskDistributionChart } from "@/components/risk-distribution-chart";
 import { SectionCard } from "@/components/section-card";
-import { getDashboardSummary } from "@/lib/api";
+import { getDashboardSummary, getLiveMonitorBootstrap } from "@/lib/api";
 
 const currency = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -17,7 +17,10 @@ const decisionStyles = {
 };
 
 export default async function DashboardPage() {
-  const summary = await getDashboardSummary();
+  const [summary, liveMonitor] = await Promise.all([
+    getDashboardSummary(),
+    getLiveMonitorBootstrap(),
+  ]);
 
   return (
     <main className="space-y-8">
@@ -39,6 +42,12 @@ export default async function DashboardPage() {
                   className="rounded-full bg-ink px-5 py-3 text-paper transition hover:opacity-90"
                 >
                   Open blocked case
+                </Link>
+                <Link
+                  href="/live"
+                  className="rounded-full border border-line px-5 py-3 text-ink transition hover:bg-paper"
+                >
+                  Open live monitor
                 </Link>
                 <Link
                   href="/cases/tx_blocked_001/graph"
@@ -127,6 +136,46 @@ export default async function DashboardPage() {
           </div>
         </div>
       </SectionCard>
+
+      <SectionCard title="Unified operations lane" eyebrow="Merged from the legacy dashboard">
+        <div className="grid gap-6 lg:grid-cols-[1fr_0.9fr]">
+          <div className="space-y-4">
+            <p className="max-w-3xl text-lg leading-8 text-muted">
+              Sentinel now includes the old streaming monitor as a first-class view,
+              so you can move from live rule and ring alerts into the analyst case
+              workflow without switching apps.
+            </p>
+            <div className="flex flex-wrap gap-3 text-sm">
+              <span className="rounded-full bg-paper px-4 py-2 text-muted">
+                synthetic transaction stream
+              </span>
+              <span className="rounded-full bg-paper px-4 py-2 text-muted">
+                anomaly plus rule scoring
+              </span>
+              <span className="rounded-full bg-paper px-4 py-2 text-muted">
+                entity graph watchtower
+              </span>
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-3">
+            <MetricCard
+              label="Live alerts"
+              value={liveMonitor.stats.flagged_alerts.toString()}
+              tone="review"
+            />
+            <MetricCard
+              label="Ring clusters"
+              value={liveMonitor.stats.ring_clusters.toString()}
+              tone="block"
+            />
+            <MetricCard
+              label="Latency"
+              value={`${liveMonitor.stats.total_latency_ms} ms`}
+              tone="safe"
+            />
+          </div>
+        </div>
+      </SectionCard>
     </main>
   );
 }
@@ -154,4 +203,3 @@ function MetricCard({
     </div>
   );
 }
-

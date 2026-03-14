@@ -5,7 +5,8 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Sentinel Fraud Console",
-  description: "Real-time fraud intelligence using behavioral identity and network risk.",
+  description:
+    "Real-time fraud intelligence combining live streaming detection, behavioral identity, and network risk.",
 };
 
 export default function RootLayout({
@@ -32,6 +33,12 @@ export default function RootLayout({
               </Link>
               <Link
                 className="rounded-full border border-line px-4 py-2 hover:bg-paper"
+                href="/live"
+              >
+                Live Monitor
+              </Link>
+              <Link
+                className="rounded-full border border-line px-4 py-2 hover:bg-paper"
                 href="/cases/tx_blocked_001"
               >
                 Flagged Case
@@ -50,4 +57,3 @@ export default function RootLayout({
     </html>
   );
 }
-
