@@ -261,11 +261,24 @@ class SentinelService:
                 self._graph_node("cashout_account", "Cash-out", "cashout suspicious"),
             ]
             edges = [
-                self._graph_edge(source, "mule_A", "Transfer", "highlighted"),
-                self._graph_edge("mule_A", "mule_B", "Relay", "highlighted"),
-                self._graph_edge("mule_B", "mule_C", "Relay", "highlighted"),
-                self._graph_edge("mule_B", "mule_D", "Fan-out", "branch"),
-                self._graph_edge("mule_C", "cashout_account", "Cash-out", "highlighted"),
+                self._graph_edge(
+                    source,
+                    "mule_A",
+                    f"${case['amount']:,.0f}",
+                    "highlighted",
+                    amount=case["amount"],
+                    timestamp=case["timeline_label"],
+                ),
+                self._graph_edge("mule_A", "mule_B", "Relay", "highlighted", timestamp=case["timeline_label"]),
+                self._graph_edge("mule_B", "mule_C", "Relay", "highlighted", timestamp=case["timeline_label"]),
+                self._graph_edge("mule_B", "mule_D", "Fan-out", "branch", timestamp=case["timeline_label"]),
+                self._graph_edge(
+                    "mule_C",
+                    "cashout_account",
+                    "Cash-out",
+                    "highlighted",
+                    timestamp=case["timeline_label"],
+                ),
             ]
             highlighted_nodes = [source, "mule_A", "mule_B", "mule_C", "cashout_account"]
             highlighted_edges = [
@@ -283,10 +296,29 @@ class SentinelService:
                 self._graph_node("cashout_account", "Cash-out", "cashout suspicious"),
             ]
             edges = [
-                self._graph_edge(source, recipient, "Transfer", "highlighted"),
-                self._graph_edge(recipient, "mule_B", "One-hop link", "highlighted"),
-                self._graph_edge("mule_B", "mule_C", "Relay", "context"),
-                self._graph_edge("mule_C", "cashout_account", "Cash-out", "context"),
+                self._graph_edge(
+                    source,
+                    recipient,
+                    f"${case['amount']:,.0f}",
+                    "highlighted",
+                    amount=case["amount"],
+                    timestamp=case["timeline_label"],
+                ),
+                self._graph_edge(
+                    recipient,
+                    "mule_B",
+                    "One-hop link",
+                    "highlighted",
+                    timestamp=case["timeline_label"],
+                ),
+                self._graph_edge("mule_B", "mule_C", "Relay", "context", timestamp=case["timeline_label"]),
+                self._graph_edge(
+                    "mule_C",
+                    "cashout_account",
+                    "Cash-out",
+                    "context",
+                    timestamp=case["timeline_label"],
+                ),
             ]
             highlighted_nodes = [source, recipient, "mule_B"]
             highlighted_edges = [f"{source}->{recipient}", f"{recipient}->mule_B"]
@@ -297,8 +329,21 @@ class SentinelService:
                 self._graph_node("utility_pool", "Utility Pool", "safe"),
             ]
             edges = [
-                self._graph_edge(source, recipient, "Transfer", "highlighted"),
-                self._graph_edge(recipient, "utility_pool", "Settlement", "context"),
+                self._graph_edge(
+                    source,
+                    recipient,
+                    f"${case['amount']:,.0f}",
+                    "highlighted",
+                    amount=case["amount"],
+                    timestamp=case["timeline_label"],
+                ),
+                self._graph_edge(
+                    recipient,
+                    "utility_pool",
+                    "Settlement",
+                    "context",
+                    timestamp=case["timeline_label"],
+                ),
             ]
             highlighted_nodes = [source, recipient]
             highlighted_edges = [f"{source}->{recipient}"]
@@ -648,11 +693,25 @@ class SentinelService:
         }
 
     @staticmethod
-    def _graph_edge(source: str, target: str, label: str, classes: str) -> dict[str, Any]:
-        return {
-            "data": {"id": f"{source}->{target}", "source": source, "target": target, "label": label},
-            "classes": classes,
+    def _graph_edge(
+        source: str,
+        target: str,
+        label: str,
+        classes: str,
+        amount: float | None = None,
+        timestamp: str | None = None,
+    ) -> dict[str, Any]:
+        data: dict[str, Any] = {
+            "id": f"{source}->{target}",
+            "source": source,
+            "target": target,
+            "label": label,
         }
+        if amount is not None:
+            data["amount"] = f"{amount:.2f}"
+        if timestamp:
+            data["timestamp"] = timestamp
+        return {"data": data, "classes": classes}
 
 
 service = SentinelService()

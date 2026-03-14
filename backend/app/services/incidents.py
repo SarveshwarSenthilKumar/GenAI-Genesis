@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 from difflib import SequenceMatcher
 from typing import Any
+import networkx as nx
 
 from ..models import (
     GraphResponse,
@@ -175,6 +176,7 @@ class IncidentService:
                     "target": receiver,
                     "label": f"${tx['amount']:,.0f}",
                     "amount": f"{tx['amount']:.2f}",
+                    "timestamp": self._format_timestamp(tx["timestamp"]),
                 },
                 "classes": classes,
             }
@@ -182,6 +184,17 @@ class IncidentService:
         recipient_fan_in = sum(1 for tx in relevant if tx["receiver_account"] == alert.receiver_account)
         recipient_fan_out = sum(1 for tx in relevant if tx["sender_account"] == alert.receiver_account)
         edges = list(edges_by_id.values())
+        suspicious_nodes = sorted(
+            node_id
+            for node_id in nodes
+            if node_id.startswith("MULE") or node_id.startswith("CASH")
+        )
+        metrics = self._incident_graph_metrics(
+            relevant=relevant,
+            recipient_account=alert.receiver_account,
+            highlighted_nodes=highlighted_nodes,
+            suspicious_nodes=suspicious_nodes,
+        )
 
         return GraphResponse(
             transaction_id=incident_id,
@@ -189,15 +202,13 @@ class IncidentService:
             edges=edges,
             highlighted_node_ids=sorted(highlighted_nodes),
             highlighted_edge_ids=highlighted_edges,
-            suspicious_cluster_ids=sorted(focus_accounts),
+            suspicious_cluster_ids=suspicious_nodes,
             metrics=GraphSignals(
-                distance_to_suspicious_cluster=1 if focus_accounts else None,
+                distance_to_suspicious_cluster=metrics.distance_to_suspicious_cluster,
                 recipient_fan_in=recipient_fan_in,
                 recipient_fan_out=recipient_fan_out,
-                rapid_chain_detected=alert.type == "ring" or any(
-                    "rapid" in reason.lower() for reason in alert.network_evidence
-                ),
-                cycle_detected=alert.type == "ring",
+                rapid_chain_detected=metrics.rapid_chain_detected,
+                cycle_detected=metrics.cycle_detected,
             ),
         )
 
@@ -465,6 +476,72 @@ class IncidentService:
         if sender in focus_accounts or receiver in focus_accounts:
             return "branch"
         return ""
+
+    def _incident_graph_metrics(
+        self,
+        relevant: list[dict[str, Any]],
+        recipient_account: str | None,
+        highlighted_nodes: set[str],
+        suspicious_nodes: list[str],
+    ) -> GraphSignals:
+        account_graph = nx.DiGraph()
+        timestamps_by_edge: list[tuple[str, str, datetime]] = []
+
+        for tx in relevant:
+            sender = tx["sender_account"]
+            receiver = tx["receiver_account"]
+            account_graph.add_edge(sender, receiver)
+            try:
+                parsed = datetime.fromisoformat(tx["timestamp"])
+            except (KeyError, TypeError, ValueError):
+                continue
+            timestamps_by_edge.append((sender, receiver, parsed))
+
+        distance: int | None = None
+        if recipient_account and recipient_account in account_graph and suspicious_nodes:
+            undirected = account_graph.to_undirected()
+            candidate_distances: list[int] = []
+            for suspicious in suspicious_nodes:
+                if suspicious not in undirected:
+                    continue
+                try:
+                    candidate_distances.append(
+                        nx.shortest_path_length(undirected, recipient_account, suspicious)
+                    )
+                except nx.NetworkXNoPath:
+                    continue
+            if candidate_distances:
+                distance = min(candidate_distances)
+
+        rapid_chain_detected = self._has_rapid_chain(timestamps_by_edge)
+        cycle_detected = (
+            len(list(nx.simple_cycles(account_graph))) > 0 if account_graph.number_of_edges() else False
+        )
+
+        return GraphSignals(
+            distance_to_suspicious_cluster=distance,
+            recipient_fan_in=0,
+            recipient_fan_out=0,
+            rapid_chain_detected=rapid_chain_detected,
+            cycle_detected=cycle_detected,
+        )
+
+    def _has_rapid_chain(
+        self, timestamps_by_edge: list[tuple[str, str, datetime]], max_gap_seconds: int = 300
+    ) -> bool:
+        if len(timestamps_by_edge) < 2:
+            return False
+
+        ordered = sorted(timestamps_by_edge, key=lambda item: item[2])
+        for index, (sender_a, receiver_a, time_a) in enumerate(ordered):
+            for sender_b, _receiver_b, time_b in ordered[index + 1 :]:
+                if (time_b - time_a).total_seconds() > max_gap_seconds:
+                    break
+                if receiver_a == sender_b:
+                    return True
+                if sender_a == sender_b:
+                    return True
+        return False
 
     def _combine_unique(self, *groups: list[str]) -> list[str]:
         seen: list[str] = []
