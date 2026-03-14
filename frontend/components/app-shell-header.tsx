@@ -10,29 +10,7 @@ export function AppShellHeader() {
   const isInvestigation = pathname.startsWith("/incidents/");
 
   if (isLanding) {
-    return (
-      <header className="mb-8 flex flex-col gap-4 rounded-[30px] border border-line/45 bg-surface/75 px-5 py-4 shadow-frame backdrop-blur lg:flex-row lg:items-center lg:justify-between">
-        <div>
-          <p className="text-xs uppercase tracking-[0.3em] text-muted">
-            AI-native fraud defense
-          </p>
-          <Link href="/" className="mt-2 block font-serif text-[2.5rem] leading-none text-ink">
-            Sentinel
-          </Link>
-        </div>
-        <div className="flex flex-wrap items-center gap-3 text-sm">
-          <span className="rounded-full border border-line/45 bg-canvas/70 px-4 py-2 text-muted">
-            Gemini-assisted investigation
-          </span>
-          <Link
-            href="/dashboard"
-            className="rounded-full bg-ink px-5 py-3 text-canvas transition hover:opacity-90"
-          >
-            Open analyst dashboard
-          </Link>
-        </div>
-      </header>
-    );
+    return null;
   }
 
   return (

@@ -5,6 +5,8 @@
   "scripts": {
     "clean": "node -e \"require('fs').rmSync('.next', { recursive: true, force: true })\"",
     "dev": "next dev",
+    "dev:fresh": "npm run clean && next dev",
+    "reset": "npm run clean",
     "build": "next build",
     "start": "next start"
   },
