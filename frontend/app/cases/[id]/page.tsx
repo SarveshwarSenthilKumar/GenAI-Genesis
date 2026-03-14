@@ -48,7 +48,7 @@ export default async function CaseDetailPage({
               {Math.round(detail.overall_risk * 100)}%
             </p>
             <p className="max-w-2xl text-lg leading-8 text-muted">
-              {detail.gemini_explanation}
+              {detail.openai_explanation}
             </p>
             <div className="flex flex-wrap gap-3 text-sm">
               <span className="rounded-full bg-paper px-4 py-2 text-muted">
@@ -69,19 +69,19 @@ export default async function CaseDetailPage({
             <div className="mt-3">
               <span
                 className={`rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em] ${
-                  detail.ai_mode === "gemini"
+                  detail.ai_mode === "openai"
                     ? "bg-safe/10 text-safe"
                     : "bg-review/10 text-review"
                 }`}
               >
-                {detail.ai_mode === "gemini" ? "Live Gemini" : "Fallback copy"}
+                {detail.ai_mode === "openai" ? "Live OpenAI" : "Fallback copy"}
               </span>
             </div>
             <p className="mt-3 font-serif text-3xl text-ink">
               {detail.recommended_action}
             </p>
             <ul className="mt-5 space-y-3 text-sm leading-7 text-muted">
-              {detail.gemini_summary_bullets.map((bullet) => (
+              {detail.openai_summary_bullets.map((bullet) => (
                 <li key={bullet}>- {bullet}</li>
               ))}
             </ul>

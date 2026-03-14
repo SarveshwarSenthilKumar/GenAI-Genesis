@@ -37,3 +37,6 @@ build/
 # OS temp files
 *.swp
 *.swo
+
+# others
+tmp/

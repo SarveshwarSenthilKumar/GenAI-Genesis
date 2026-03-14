@@ -64,10 +64,10 @@ export type ScoredTransaction = {
   network_anomalies: string[];
   behavior_signals: BehaviorSignals;
   graph_signals: GraphSignals;
-  gemini_explanation: string;
-  gemini_summary_bullets: string[];
+  openai_explanation: string;
+  openai_summary_bullets: string[];
   recommended_action: string;
-  ai_mode: "gemini" | "fallback";
+  ai_mode: "openai" | "fallback";
 };
 
 export type BehaviorProfile = {
@@ -104,7 +104,7 @@ export type ChatMessage = {
 export type TransactionChatResponse = {
   answer: string;
   follow_ups: string[];
-  mode: "gemini" | "fallback";
+  mode: "openai" | "fallback";
 };
 
 export type IncidentQueueStats = {
@@ -154,7 +154,7 @@ export type IncidentPanelResponse = {
   explanation: string;
   summary_bullets: string[];
   recommended_action: string;
-  ai_mode: "gemini" | "fallback";
+  ai_mode: "openai" | "fallback";
 };
 
 export type IncidentBehaviorProfile = {
@@ -188,14 +188,14 @@ export type IncidentDetailResponse = {
   explanation: string;
   summary_bullets: string[];
   recommended_action: string;
-  ai_mode: "gemini" | "fallback";
+  ai_mode: "openai" | "fallback";
   behavior_profile: IncidentBehaviorProfile;
 };
 
 export type IncidentChatResponse = {
   answer: string;
   follow_ups: string[];
-  mode: "gemini" | "fallback";
+  mode: "openai" | "fallback";
 };
 
 export type LiveAction = "allow" | "review" | "hold" | "block";
@@ -298,4 +298,35 @@ export type LiveMonitorPayload = {
   transactions: LiveMonitorTransactionRow[];
   alerts: LiveMonitorAlert[];
   graph: LiveMonitorGraph;
+};
+
+export type UploadSchemaField = {
+  field: string;
+  column: string | null;
+  confidence: number;
+  notes: string | null;
+};
+
+export type UploadSchemaInference = {
+  fields: UploadSchemaField[];
+  required_missing: string[];
+};
+
+export type UploadAlertItem = {
+  transaction_id: string;
+  sender_account: string | null;
+  receiver_account: string | null;
+  amount: number;
+  currency: string | null;
+  risk_score: number;
+  decision: Decision;
+  reasons: string[];
+};
+
+export type UploadReport = {
+  total_transactions: number;
+  flagged_count: number;
+  suspicious_volume: number;
+  alerts: UploadAlertItem[];
+  mapping: UploadSchemaInference;
 };

@@ -231,6 +231,37 @@ class LiveMonitorPayload(BaseModel):
     graph: LiveMonitorGraph
 
 
+class UploadSchemaField(BaseModel):
+    field: str
+    column: str | None = None
+    confidence: float = Field(0, ge=0, le=1)
+    notes: str | None = None
+
+
+class UploadSchemaInference(BaseModel):
+    fields: list[UploadSchemaField]
+    required_missing: list[str] = Field(default_factory=list)
+
+
+class UploadAlertItem(BaseModel):
+    transaction_id: str
+    sender_account: str | None = None
+    receiver_account: str | None = None
+    amount: float
+    currency: str | None = None
+    risk_score: float
+    decision: Decision
+    reasons: list[str] = Field(default_factory=list)
+
+
+class UploadReport(BaseModel):
+    total_transactions: int
+    flagged_count: int
+    suspicious_volume: float
+    alerts: list[UploadAlertItem] = Field(default_factory=list)
+    mapping: UploadSchemaInference
+
+
 class IncidentQueueStats(BaseModel):
     total_incidents: int
     blocked_count: int

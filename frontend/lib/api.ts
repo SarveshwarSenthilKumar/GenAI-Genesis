@@ -111,3 +111,25 @@ export async function postIncidentChat(
 
   return response.json() as Promise<IncidentChatResponse>;
 }
+
+export async function postUploadLive(
+  transactionsFile: File,
+  accountsFile?: File,
+): Promise<LiveMonitorPayload> {
+  const formData = new FormData();
+  formData.append("transactions", transactionsFile);
+  if (accountsFile) {
+    formData.append("accounts", accountsFile);
+  }
+
+  const response = await fetch(`${API_BASE_URL}/api/uploads/transactions/live`, {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Upload failed: ${response.status}`);
+  }
+
+  return response.json() as Promise<LiveMonitorPayload>;
+}

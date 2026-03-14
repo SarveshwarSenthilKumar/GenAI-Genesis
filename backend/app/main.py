@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import FRONTEND_ORIGINS
@@ -18,6 +18,7 @@ from .models import (
 from .services.incidents import incident_service
 from .services.live_monitor import live_monitor_service
 from .services.sentinel import service
+from .services.uploads import upload_service
 
 
 app = FastAPI(title="Sentinel API", version="0.1.0")
@@ -140,3 +141,20 @@ def transaction_chat(transaction_id: str, payload: TransactionChatRequest):
         )
     except KeyError as exc:
         raise HTTPException(status_code=404, detail="Transaction not found.") from exc
+
+
+@app.post("/api/uploads/transactions/live", response_model=LiveMonitorPayload)
+async def upload_transactions_report(
+    transactions: UploadFile = File(...),
+    accounts: UploadFile | None = File(default=None),
+):
+    if not transactions.filename:
+        raise HTTPException(status_code=400, detail="No transactions file uploaded.")
+
+    try:
+        contents = await transactions.read()
+        payload = upload_service.payload_from_bytes(contents)
+    except Exception as exc:  # pragma: no cover - upload parsing errors
+        raise HTTPException(status_code=400, detail="Failed to parse transactions file.") from exc
+
+    return payload

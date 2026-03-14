@@ -24,8 +24,10 @@ const alertStyles: Record<LiveAction, string> = {
 
 export function LiveMonitorDashboard({
   initialData,
+  enableStreaming = true,
 }: {
   initialData: LiveMonitorPayload;
+  enableStreaming?: boolean;
 }) {
   const [payload, setPayload] = useState(initialData);
   const [polling, setPolling] = useState(true);
@@ -56,7 +58,7 @@ export function LiveMonitorDashboard({
   }
 
   useEffect(() => {
-    if (!polling) {
+    if (!polling || !enableStreaming) {
       return;
     }
 
@@ -112,26 +114,32 @@ export function LiveMonitorDashboard({
         title="Real-time fraud operations"
         eyebrow="Merged live monitor"
         action={
-          <div className="flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => setPolling((current) => !current)}
-              className="rounded-full border border-line bg-paper px-4 py-2 text-sm text-ink transition hover:bg-[#efe4d1]"
-            >
-              {polling ? "Pause live stream" : "Resume live stream"}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                startTransition(() => {
-                  void refresh(12);
-                });
-              }}
-              className="rounded-full bg-ink px-4 py-2 text-sm text-paper transition hover:opacity-90"
-            >
-              Inject suspicious burst
-            </button>
-          </div>
+          enableStreaming ? (
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => setPolling((current) => !current)}
+                className="rounded-full border border-line bg-paper px-4 py-2 text-sm text-ink transition hover:bg-[#efe4d1]"
+              >
+                {polling ? "Pause live stream" : "Resume live stream"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  startTransition(() => {
+                    void refresh(12);
+                  });
+                }}
+                className="rounded-full bg-ink px-4 py-2 text-sm text-paper transition hover:opacity-90"
+              >
+                Inject suspicious burst
+              </button>
+            </div>
+          ) : (
+            <span className="rounded-full border border-line bg-paper px-4 py-2 text-xs uppercase tracking-[0.18em] text-muted">
+              Upload snapshot
+            </span>
+          )
         }
       >
         <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
@@ -156,7 +164,13 @@ export function LiveMonitorDashboard({
                   : "Waiting for stream"}
               </span>
               <span className="rounded-full bg-paper px-4 py-3 text-muted">
-                {isRefreshing ? "Refreshing..." : polling ? "Auto-refresh on" : "Paused"}
+                {enableStreaming
+                  ? isRefreshing
+                    ? "Refreshing..."
+                    : polling
+                      ? "Auto-refresh on"
+                      : "Paused"
+                  : "Static snapshot"}
               </span>
             </div>
             {error ? (

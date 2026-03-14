@@ -765,7 +765,7 @@ export function IncidentQueueWorkspace({
                         <div className="mt-4 flex flex-wrap gap-2">
                           <StatusPill>{currency.format(panel.amount)}</StatusPill>
                           <StatusPill>
-                            {panel.ai_mode === "gemini" ? "Live Gemini" : "Fallback reasoning"}
+                            {panel.ai_mode === "openai" ? "Live OpenAI" : "Fallback reasoning"}
                           </StatusPill>
                         </div>
                       </div>

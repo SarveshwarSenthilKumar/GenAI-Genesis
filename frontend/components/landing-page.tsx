@@ -385,6 +385,12 @@ export function LandingPage() {
                 >
                   Open the analyst console
                 </Link>
+                <Link
+                  href="/upload"
+                  className="mt-3 inline-flex min-w-[18rem] items-center justify-center rounded-full border border-[#0B1324]/20 bg-white px-10 py-4 text-sm font-medium text-[#0B1324] transition hover:bg-[#F8FAFC]"
+                >
+                  Upload transaction data
+                </Link>
               </div>
             </div>
 

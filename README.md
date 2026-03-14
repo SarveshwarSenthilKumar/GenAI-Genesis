@@ -6,7 +6,7 @@ This project (Sentinel) is a demo-first fraud analyst console for hackathon judg
 
 - Frontend: Next.js, TypeScript, Tailwind, Cytoscape.js, Recharts
 - Backend: FastAPI, Python, pandas, scikit-learn, networkx
-- AI: Gemini API for explanations only
+- AI: OpenAI API for explanations only
 
 ## Project Layout
 
@@ -93,9 +93,10 @@ This repo includes [render.yaml](/Users/johndev/Downloads/GenAI/GenAI-Genesis/re
 Set these environment variables in Render:
 
 - `FRONTEND_ORIGINS=https://your-vercel-app.vercel.app`
-- `GEMINI_API_KEY=...` (optional)
-- `GEMINI_MODEL=gemini-2.0-flash` (optional)
-- `GEMINI_TIMEOUT_SECONDS=8` (optional)
+- `OPENAI_API_KEY=...` (optional)
+- `OPENAI_MODEL=gpt-4o-mini` (optional)
+- `OPENAI_BASE_URL=https://vjioo4r1vyvcozuj.us-east-2.aws.endpoints.huggingface.cloud/v1` (optional)
+- `OPENAI_TIMEOUT_SECONDS=8` (optional)
 
 Start command:
 
@@ -118,13 +119,14 @@ Set this environment variable in Vercel:
 3. Set `FRONTEND_ORIGINS` in Render to your Vercel frontend URL.
 4. Redeploy both if needed so the env vars are picked up.
 
-## Gemini
+## OpenAI
 
-Gemini is optional for local development. If `GEMINI_API_KEY` is not set, Sentinel falls back to deterministic explanations.
+OpenAI is optional for local development. If `OPENAI_API_KEY` is not set, Sentinel falls back to deterministic explanations.
 
 ```bash
-export GEMINI_API_KEY=your_key_here
-export GEMINI_MODEL=gemini-2.0-flash
+export OPENAI_API_KEY=your_key_here
+export OPENAI_MODEL=gpt-4o-mini
+export OPENAI_BASE_URL=https://vjioo4r1vyvcozuj.us-east-2.aws.endpoints.huggingface.cloud/v1
 ```
 
 ## Demo Cases

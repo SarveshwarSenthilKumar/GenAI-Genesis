@@ -29,7 +29,7 @@ export function IncidentChat({ incidentId, decision }: IncidentChatProps) {
   const [input, setInput] = useState("");
   const [isPending, setIsPending] = useState(false);
   const [suggestions, setSuggestions] = useState(INITIAL_PROMPTS);
-  const [mode, setMode] = useState<"gemini" | "fallback">("fallback");
+  const [mode, setMode] = useState<"openai" | "fallback">("fallback");
 
   async function sendMessage(message: string) {
     const trimmed = message.trim();
@@ -89,10 +89,10 @@ export function IncidentChat({ incidentId, decision }: IncidentChatProps) {
       <div className="mb-4 flex justify-end">
         <span
           className={`rounded-full px-3 py-1 text-xs uppercase tracking-[0.18em] ${
-            mode === "gemini" ? "bg-safe/10 text-safe" : "bg-review/10 text-review"
+            mode === "openai" ? "bg-safe/10 text-safe" : "bg-review/10 text-review"
           }`}
         >
-          {mode === "gemini" ? "Live Gemini" : "Fallback mode"}
+          {mode === "openai" ? "Live OpenAI" : "Fallback mode"}
         </span>
       </div>
 
@@ -112,7 +112,7 @@ export function IncidentChat({ incidentId, decision }: IncidentChatProps) {
           ))}
           {isPending ? (
             <div className="max-w-[92%] rounded-[20px] bg-panel px-4 py-3 text-sm text-muted">
-              Gemini is drafting a grounded answer...
+              OpenAI is drafting a grounded answer...
             </div>
           ) : null}
         </div>

@@ -57,6 +57,19 @@ class LiveMonitorService:
     def _build_snapshot(self) -> LiveMonitorSnapshot:
         started = time.perf_counter()
         transactions = self.engine.recent_transactions(120)
+        snapshot = self._build_snapshot_from_transactions(transactions, started=started)
+        self._latest_snapshot = snapshot
+        return snapshot
+
+    def build_snapshot_from_transactions(
+        self, transactions: list[dict]
+    ) -> LiveMonitorSnapshot:
+        return self._build_snapshot_from_transactions(transactions)
+
+    def _build_snapshot_from_transactions(
+        self, transactions: list[dict], started: float | None = None
+    ) -> LiveMonitorSnapshot:
+        started = started or time.perf_counter()
 
         feature_start = time.perf_counter()
         enriched = engineer_transaction_features(transactions)
@@ -237,7 +250,7 @@ class LiveMonitorService:
             total_latency_ms=total_latency_ms,
         )
 
-        snapshot = LiveMonitorSnapshot(
+        return LiveMonitorSnapshot(
             payload=LiveMonitorPayload(
                 generated_at=enriched[-1]["timestamp"] if enriched else None,
                 stats=stats,
@@ -248,8 +261,6 @@ class LiveMonitorService:
             enriched=enriched,
             transaction_rows=transaction_rows,
         )
-        self._latest_snapshot = snapshot
-        return snapshot
 
     def _build_stats(
         self,
