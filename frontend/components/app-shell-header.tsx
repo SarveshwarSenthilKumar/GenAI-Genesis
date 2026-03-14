@@ -16,12 +16,13 @@ export function AppShellHeader() {
   }
 
   return (
-    <header className="mb-4 flex flex-col gap-4 rounded-[24px] border border-line/45 bg-surface/82 px-4 py-3 shadow-frame backdrop-blur sm:flex-row sm:items-center sm:justify-between">
+    <header className="mb-6 border-b border-line/35 pb-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div className="flex items-center gap-4">
         <Link href="/" className="font-serif text-[2rem] leading-none text-ink">
           Sentinel
         </Link>
-        <span className="hidden rounded-full border border-line/45 bg-canvas/70 px-3 py-1.5 text-xs uppercase tracking-[0.22em] text-muted sm:inline-flex">
+        <span className="hidden rounded-full border border-line/45 px-3 py-1.5 text-xs uppercase tracking-[0.22em] text-muted sm:inline-flex">
           Unified analyst workspace
         </span>
       </div>
@@ -29,7 +30,7 @@ export function AppShellHeader() {
         {!isQueue && (
           <Link
             href="/dashboard"
-            className="rounded-full border border-line bg-canvas/70 px-4 py-2 text-ink transition hover:bg-paper"
+            className="rounded-full border border-line/60 px-4 py-2 text-ink transition hover:bg-paper/50"
           >
             Dashboard
           </Link>
@@ -37,7 +38,7 @@ export function AppShellHeader() {
         {!isLive && (
           <Link
             href="/live"
-            className="rounded-full border border-line bg-canvas/70 px-4 py-2 text-ink transition hover:bg-paper"
+            className="rounded-full border border-line/60 px-4 py-2 text-ink transition hover:bg-paper/50"
           >
             Live Monitor
           </Link>
@@ -45,13 +46,14 @@ export function AppShellHeader() {
         {!isDocumentation && (
           <Link
             href="/documentation"
-            className="rounded-full border border-line bg-canvas/70 px-4 py-2 text-ink transition hover:bg-paper"
+            className="rounded-full border border-line/60 px-4 py-2 text-ink transition hover:bg-paper/50"
           >
             Documentation
           </Link>
         )}
         <ThemeToggle />
       </nav>
+      </div>
     </header>
   );
 }
