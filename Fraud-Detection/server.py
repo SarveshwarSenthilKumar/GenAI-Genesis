@@ -118,6 +118,21 @@ class FraudDemoService:
                         "cluster_id": cluster_id,
                         "accounts_involved": accounts_involved,
                         "suspicious_funds_total": suspicious_funds_total,
+                        "why_flagged": {
+                            "transaction_anomaly_score": anomaly_score,
+                            "rule_score": rule_score,
+                            "network_risk_score": network_score,
+                            "final_risk": final_risk,
+                            "severity": severity,
+                            "action": action,
+                            "breakdown": [
+                                {"label": "Anomaly", "value": anomaly_score},
+                                {"label": "Rules", "value": rule_score},
+                                {"label": "Network", "value": network_score},
+                            ],
+                            "top_rule_reasons": [hit.reason for hit in rule_hits][:3],
+                            "top_network_evidence": network_evidence[:3],
+                        },
                         "explanation": explanation,
                     }
                 )
@@ -137,6 +152,22 @@ class FraudDemoService:
                     "rule_reasons": [],
                     "network_evidence": alert.evidence,
                     "suspicious_funds_total": alert.suspicious_funds_total,
+                    "why_flagged": {
+                        "transaction_anomaly_score": 0.0,
+                        "rule_score": 0.0,
+                        "network_risk_score": alert.risk_score,
+                        "final_risk": alert.risk_score,
+                        "severity": severity,
+                        "action": action,
+                        "breakdown": [
+                            {"label": "Cycle", "value": 1.0},
+                            {"label": "Flow Velocity", "value": min(alert.avg_hop_time_sec and 300.0 / max(alert.avg_hop_time_sec * alert.cycle_length, 1.0), 1.0)},
+                            {"label": "Cluster Size", "value": min(alert.cycle_length / 5.0, 1.0)},
+                            {"label": "Volume", "value": min(alert.total_amount / 50000.0, 1.0)},
+                        ],
+                        "top_rule_reasons": [],
+                        "top_network_evidence": alert.evidence[:3],
+                    },
                     "explanation": f"Cluster {alert.cluster_id} shows circular transfers across {alert.cycle_length} accounts with average hop time of {alert.avg_hop_time_sec:.0f} seconds.",
                 }
             )
