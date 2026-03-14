@@ -350,7 +350,7 @@ export function LandingPage() {
               <p className="text-xs uppercase tracking-[0.34em] text-slate-500">
                 AI-native fraud defense
               </p>
-              <p className="mt-3 font-serif text-[2.85rem] leading-none text-[#0B1324]">
+              <p className="mt-3 font-serif text-[4.1rem] font-semibold leading-none text-[#0B1324] sm:text-[4.8rem] lg:text-[5.2rem]">
                 Sentinel
               </p>
             </div>
@@ -368,7 +368,7 @@ export function LandingPage() {
                 data-landing-reveal
                 className="mt-5 font-serif text-[3.5rem] leading-[0.92] text-[#0B1324] opacity-0 sm:text-[4.5rem] lg:text-[5.4rem]"
               >
-                Sentinel detects fraud beyond transactions.
+                Detect fraud beyond transactions.
               </h1>
               <p
                 data-landing-reveal
