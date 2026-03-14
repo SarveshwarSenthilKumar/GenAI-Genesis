@@ -1128,15 +1128,23 @@ function InfoBadge({
 }
 
 function riskColor(value: number) {
-  if (value >= 0.75) {
-    return "#c2410c";
+  if (value <= 0.15) {
+    return "#15803d";
   }
 
-  if (value >= 0.45) {
-    return "#b7791f";
+  if (value <= 0.4) {
+    return "#65a30d";
   }
 
-  return "#0f766e";
+  if (value <= 0.65) {
+    return "#ca8a04";
+  }
+
+  if (value <= 0.85) {
+    return "#ea580c";
+  }
+
+  return "#dc2626";
 }
 
 function PanelBlock({

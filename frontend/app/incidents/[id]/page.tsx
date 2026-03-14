@@ -14,14 +14,14 @@ const currency = new Intl.NumberFormat("en-US", {
 
 const decisionBadgeStyles: Record<LiveAction, string> = {
   allow: "border-safe/30 bg-safe/10 text-safe",
-  review: "border-review/30 bg-review/10 text-review",
+  review: "border-accent/35 bg-accent/12 text-accent",
   hold: "border-block/30 bg-block/10 text-block",
   block: "border-block/30 bg-block/10 text-block",
 };
 
 const summaryAccentStyles: Record<LiveAction, string> = {
   allow: "bg-safe",
-  review: "bg-review",
+  review: "bg-accent",
   hold: "bg-block",
   block: "bg-block",
 };
