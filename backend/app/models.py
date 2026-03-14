@@ -182,6 +182,8 @@ class LiveMonitorAlert(BaseModel):
     network_evidence: list[str] = Field(default_factory=list)
     accounts_involved: list[str] = Field(default_factory=list)
     suspicious_funds_total: float | None = None
+    manually_injected: bool = False
+    injected_scenario: str | None = None
     why_flagged: LiveMonitorWhyFlagged
     explanation: str
 
@@ -225,6 +227,7 @@ class LiveMonitorGraph(BaseModel):
 
 class LiveMonitorPayload(BaseModel):
     generated_at: str | None = None
+    active_scenario: str | None = None
     stats: LiveMonitorStats
     transactions: list[LiveMonitorTransactionRow] = Field(default_factory=list)
     alerts: list[LiveMonitorAlert] = Field(default_factory=list)
@@ -254,6 +257,8 @@ class IncidentQueueItem(BaseModel):
     summary: str
     generated_at: str
     type: LiveAlertType
+    manually_injected: bool = False
+    injected_scenario: str | None = None
 
 
 class IncidentQueueResponse(BaseModel):

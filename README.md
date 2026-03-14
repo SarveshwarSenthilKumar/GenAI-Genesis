@@ -6,7 +6,7 @@ This project (Sentinel) is a demo-first fraud analyst console for hackathon judg
 
 - Frontend: Next.js, TypeScript, Tailwind, Cytoscape.js, Recharts
 - Backend: FastAPI, Python, pandas, scikit-learn, networkx
-- AI: Gemini API for explanations only
+- AI: OpenAI-compatible chat completions with deterministic fallback mode
 
 ## Project Layout
 
@@ -38,6 +38,8 @@ uvicorn app.main:app --reload
 ```
 
 Backend runs on `http://127.0.0.1:8000`.
+
+The backend reads environment variables from either the repo root `.env` or `backend/.env`.
 
 Useful backend routes:
 
@@ -93,9 +95,10 @@ This repo includes [render.yaml](/Users/johndev/Downloads/GenAI/GenAI-Genesis/re
 Set these environment variables in Render:
 
 - `FRONTEND_ORIGINS=https://your-vercel-app.vercel.app`
-- `GEMINI_API_KEY=...` (optional)
-- `GEMINI_MODEL=gemini-2.0-flash` (optional)
-- `GEMINI_TIMEOUT_SECONDS=8` (optional)
+- `OPENAI_API_KEY=...` (optional)
+- `OPENAI_MODEL=gpt-4o-mini` (optional)
+- `OPENAI_TIMEOUT_SECONDS=8` (optional)
+- `OPENAI_BASE_URL=https://.../v1` (optional if you are using the default backend base URL)
 
 Start command:
 
@@ -118,13 +121,27 @@ Set this environment variable in Vercel:
 3. Set `FRONTEND_ORIGINS` in Render to your Vercel frontend URL.
 4. Redeploy both if needed so the env vars are picked up.
 
-## Gemini
+## AI Configuration
 
-Gemini is optional for local development. If `GEMINI_API_KEY` is not set, Sentinel falls back to deterministic explanations.
+AI explanations and copilot chat are optional for local development. If `OPENAI_API_KEY` is not set, Sentinel falls back to deterministic explanations and chat responses.
 
 ```bash
-export GEMINI_API_KEY=your_key_here
-export GEMINI_MODEL=gemini-2.0-flash
+export OPENAI_API_KEY=your_key_here
+export OPENAI_MODEL=gpt-4o-mini
+```
+
+Optional overrides:
+
+- `OPENAI_BASE_URL` for an OpenAI-compatible endpoint
+- `OPENAI_TIMEOUT_SECONDS` to tune request timeouts
+
+Example `.env`:
+
+```bash
+OPENAI_API_KEY=your_key_here
+OPENAI_MODEL=gpt-4o-mini
+OPENAI_BASE_URL=https://vjioo4r1vyvcozuj.us-east-2.aws.endpoints.huggingface.cloud/v1
+OPENAI_TIMEOUT_SECONDS=8
 ```
 
 ## Demo Cases

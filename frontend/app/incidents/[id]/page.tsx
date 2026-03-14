@@ -12,16 +12,16 @@ const currency = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 0,
 });
 
-const decisionBadgeStyles: Record<LiveAction, string> = {
-  allow: "border-safe/30 bg-safe/10 text-safe",
-  review: "border-review/30 bg-review/10 text-review",
-  hold: "border-block/30 bg-block/10 text-block",
-  block: "border-block/30 bg-block/10 text-block",
+const decisionLabelStyles: Record<LiveAction, string> = {
+  allow: "text-safe",
+  review: "text-accent",
+  hold: "text-block",
+  block: "text-block",
 };
 
 const summaryAccentStyles: Record<LiveAction, string> = {
   allow: "bg-safe",
-  review: "bg-review",
+  review: "bg-accent",
   hold: "bg-block",
   block: "bg-block",
 };
@@ -84,11 +84,15 @@ export default async function IncidentDetailPage({
               </div>
 
               <div className="flex flex-wrap items-end gap-4 sm:gap-5">
-                <span
-                  className={`inline-flex rounded-full border px-5 py-3 text-sm font-semibold uppercase tracking-[0.28em] ${decisionBadgeStyles[detail.decision]}`}
-                >
-                  {detail.decision}
-                </span>
+                <div className="pb-1">
+                  <p className="text-xs uppercase tracking-[0.2em] text-muted">Decision</p>
+                  <p
+                    className={`mt-1 inline-flex items-center gap-2 text-base font-semibold uppercase tracking-[0.24em] ${decisionLabelStyles[detail.decision]}`}
+                  >
+                    <span className="h-2.5 w-2.5 rounded-full bg-current" />
+                    {detail.decision}
+                  </p>
+                </div>
                 <div>
                   <p className="text-xs uppercase tracking-[0.2em] text-muted">Risk</p>
                   <p className="mt-1 font-serif text-5xl leading-none text-ink sm:text-6xl">
@@ -97,7 +101,11 @@ export default async function IncidentDetailPage({
                 </div>
                 <div className="pb-1">
                   <p className="text-xs uppercase tracking-[0.2em] text-muted">Severity</p>
-                  <p className="mt-1 text-base font-medium text-muted">{severity}</p>
+                  <p
+                    className={`mt-1 text-base font-medium ${severityToneClass(detail.overall_risk)}`}
+                  >
+                    {severity}
+                  </p>
                 </div>
               </div>
             </div>
@@ -146,6 +154,13 @@ export default async function IncidentDetailPage({
             >
               Back to dashboard
             </Link>
+            <a
+              href="#sentinel-assist"
+              className="inline-flex items-center gap-2 rounded-full border border-line/80 bg-transparent px-5 py-3 text-sm text-muted transition hover:border-line hover:bg-paper/55 hover:text-ink"
+            >
+              <span className="text-base leading-none">+</span>
+              Sentinel Assist
+            </a>
           </div>
         </div>
       </section>
@@ -269,6 +284,18 @@ function severityLabel(risk: number) {
   }
 
   return "Low";
+}
+
+function severityToneClass(risk: number) {
+  if (risk >= 0.8) {
+    return "text-block";
+  }
+
+  if (risk >= 0.45) {
+    return "text-review";
+  }
+
+  return "text-safe";
 }
 
 function buildThesis(detail: IncidentDetailResponse) {

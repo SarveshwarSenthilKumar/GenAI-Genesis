@@ -2,12 +2,6 @@ type ScoreBreakdownProps = {
   items: Array<{ label: string; value: number; tone: "safe" | "review" | "block" }>;
 };
 
-const toneClasses = {
-  safe: "bg-safe",
-  review: "bg-review",
-  block: "bg-block",
-};
-
 export function ScoreBreakdown({ items }: ScoreBreakdownProps) {
   return (
     <div className="space-y-4">
@@ -19,8 +13,11 @@ export function ScoreBreakdown({ items }: ScoreBreakdownProps) {
           </div>
           <div className="h-3 rounded-full bg-line/50">
             <div
-              className={`h-3 rounded-full ${toneClasses[item.tone]}`}
-              style={{ width: `${Math.max(item.value * 100, 6)}%` }}
+              className="h-3 rounded-full transition-colors"
+              style={{
+                width: `${Math.max(item.value * 100, 2.5)}%`,
+                backgroundColor: riskColor(item.value),
+              }}
             />
           </div>
         </div>
@@ -29,3 +26,22 @@ export function ScoreBreakdown({ items }: ScoreBreakdownProps) {
   );
 }
 
+function riskColor(value: number) {
+  if (value <= 0.15) {
+    return "#15803d";
+  }
+
+  if (value <= 0.4) {
+    return "#65a30d";
+  }
+
+  if (value <= 0.65) {
+    return "#ca8a04";
+  }
+
+  if (value <= 0.85) {
+    return "#ea580c";
+  }
+
+  return "#dc2626";
+}

@@ -41,7 +41,7 @@ export default async function IncidentGraphPage({
       >
         <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
           <div className="rounded-[28px] border border-line/70 bg-paper/80 p-4">
-            <CytoscapeGraph graph={graph} />
+            <CytoscapeGraph graph={graph} enableReplay />
           </div>
           <div className="space-y-4">
             <div className="rounded-[24px] border border-line/70 bg-paper/75 p-5">
@@ -49,9 +49,10 @@ export default async function IncidentGraphPage({
                 Graph interpretation
               </p>
               <p className="mt-3 text-sm leading-7 text-muted">
-                Highlighted nodes and edges show the accounts currently driving this
-                incident’s escalation, so the analyst can judge whether the recipient
-                sits on a suspicious path or near a cash-out route.
+                This graph is built from the incident’s related live-snapshot transactions.
+                Highlighted nodes and edges mark the accounts directly involved in the
+                alert, while filled red nodes are simulator-defined mule or cash-out
+                entities that appear in the observed neighborhood.
               </p>
             </div>
             <Metric
@@ -69,9 +70,21 @@ export default async function IncidentGraphPage({
                 Highlighted entities
               </p>
               <ul className="mt-3 space-y-2 text-sm text-muted">
-                {graph.suspicious_cluster_ids.map((nodeId) => (
+                {graph.highlighted_node_ids.map((nodeId) => (
                   <li key={nodeId}>- {nodeId}</li>
                 ))}
+              </ul>
+            </div>
+            <div className="rounded-[24px] border border-line/70 bg-panel/90 p-5">
+              <p className="text-xs uppercase tracking-[0.18em] text-muted">
+                Suspicious entities present
+              </p>
+              <ul className="mt-3 space-y-2 text-sm text-muted">
+                {graph.suspicious_cluster_ids.length ? (
+                  graph.suspicious_cluster_ids.map((nodeId) => <li key={nodeId}>- {nodeId}</li>)
+                ) : (
+                  <li>- None in current snapshot slice</li>
+                )}
               </ul>
             </div>
           </div>

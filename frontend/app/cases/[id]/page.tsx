@@ -98,6 +98,13 @@ export default async function CaseDetailPage({
               >
                 Back to dashboard
               </Link>
+              <a
+                href="#sentinel-assist"
+                className="inline-flex items-center gap-2 rounded-full border border-line/80 bg-transparent px-5 py-3 text-sm text-muted transition hover:border-line hover:bg-paper/55 hover:text-ink"
+              >
+                <span className="text-base leading-none">+</span>
+                Sentinel Assist
+              </a>
             </div>
           </div>
         </div>

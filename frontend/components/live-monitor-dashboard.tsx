@@ -36,6 +36,17 @@ export function LiveMonitorDashboard({
   const [actionFilter, setActionFilter] = useState<"all" | LiveAction>("all");
   const [lastScenario, setLastScenario] = useState<string | null>(null);
   const inFlightRef = useRef(false);
+  const scenarios = [
+    { key: "normal", label: "Normal flow" },
+    { key: "account_takeover", label: "Account takeover" },
+    { key: "laundering_ring", label: "Laundering ring" },
+    { key: "smurfing_burst", label: "Smurfing burst" },
+    { key: "vpn_takeover", label: "VPN/IP takeover" },
+    { key: "mule_fanout", label: "Mule fan-out" },
+    { key: "merchant_fraud", label: "Merchant fraud" },
+    { key: "dormant_reactivation", label: "Dormant reactivation" },
+    { key: "cross_border_travel", label: "Cross-border travel" },
+  ];
 
   async function refresh(batch: number) {
     if (inFlightRef.current) {
@@ -177,40 +188,11 @@ export function LiveMonitorDashboard({
               <span className="rounded-full bg-paper px-4 py-3 text-muted">
                 {isRefreshing ? "Refreshing..." : polling ? "Auto-refresh on" : "Paused"}
               </span>
-            </div>
-            <div className="mt-4 rounded-[22px] border border-line/50 bg-canvas/76 px-4 py-4">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.18em] text-muted">
-                    Scenario injector
-                  </p>
-                  <p className="mt-1 text-sm text-muted">
-                    Keep the stream running and inject a known pattern to verify the model reacts the way you expect.
-                  </p>
-                </div>
-              </div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                {[
-                  { key: "normal", label: "Normal flow" },
-                  { key: "account_takeover", label: "Account takeover" },
-                  { key: "laundering_ring", label: "Laundering ring" },
-                  { key: "smurfing_burst", label: "Smurfing burst" },
-                ].map((scenario) => (
-                  <button
-                    key={scenario.key}
-                    type="button"
-                    disabled={isInjectingScenario}
-                    onClick={() => {
-                      startTransition(() => {
-                        void injectScenario(scenario.key);
-                      });
-                    }}
-                    className="rounded-full border border-line bg-paper px-4 py-2 text-sm text-ink transition hover:bg-canvas disabled:cursor-wait disabled:opacity-60"
-                  >
-                    {scenario.label}
-                  </button>
-                ))}
-              </div>
+              {payload.active_scenario ? (
+                <span className="rounded-full bg-[#E6EEFF] px-4 py-3 font-medium text-[#2563EB]">
+                  Scenario: {payload.active_scenario.replace(/_/g, " ")}
+                </span>
+              ) : null}
             </div>
             {error ? (
               <p className="rounded-[18px] border border-block/20 bg-block/5 px-4 py-3 text-sm text-block">
@@ -307,6 +289,38 @@ export function LiveMonitorDashboard({
             <p className="mt-4 text-sm leading-7 text-muted">
               Keep the queue focused on the actions your team is handling right now.
             </p>
+          </div>
+        </div>
+        <div className="mt-6 rounded-[22px] border border-line/70 bg-paper/70 p-5">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.18em] text-muted">Demo scenarios</p>
+              <p className="mt-2 text-sm leading-7 text-muted">
+                Trigger a specific fraud story on demand so the detection flow is reproducible
+                during your demo.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {scenarios.map((scenario) => (
+                <button
+                  key={scenario.key}
+                  type="button"
+                  disabled={isInjectingScenario}
+                  onClick={() => {
+                    startTransition(() => {
+                      void injectScenario(scenario.key);
+                    });
+                  }}
+                  className={`rounded-full px-4 py-2 text-sm transition ${
+                    payload.active_scenario === scenario.key
+                      ? "bg-ink text-paper"
+                      : "border border-line bg-paper text-ink hover:bg-[#efe4d1]"
+                  }`}
+                >
+                  {scenario.label}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </SectionCard>
