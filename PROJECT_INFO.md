@@ -31,6 +31,3 @@ Sentinel is a demo-first fraud analyst console that unifies case review and live
 
 # Additional Note
 A more detailed documentation for Sentinel is included at the top-right corner of the analyst console.
-
-# AI Use > 70% ?
-Yes.
