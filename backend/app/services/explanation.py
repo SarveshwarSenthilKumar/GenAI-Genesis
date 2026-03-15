@@ -5,7 +5,7 @@ import time
 from typing import Any
 from urllib import error
 
-from openai import OpenAI
+from openai import BadRequestError, OpenAI
 
 from ..config import OPENAI_API_KEY, OPENAI_BASE_URL, OPENAI_MODEL
 from ..models import ExplanationResponse, TransactionChatResponse
@@ -205,7 +205,15 @@ class ExplanationService:
             )
             self._set_cache(cache_key, result.model_dump())
             return result
-        except (error.URLError, TimeoutError, ValueError, KeyError, json.JSONDecodeError, IndexError):
+        except (
+            error.URLError,
+            TimeoutError,
+            ValueError,
+            KeyError,
+            json.JSONDecodeError,
+            IndexError,
+            BadRequestError,
+        ):
             return ExplanationResponse(
                 explanation=fallback_explanation,
                 bullets=fallback_bullets[:2],
