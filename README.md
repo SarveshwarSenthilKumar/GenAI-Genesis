@@ -1,26 +1,51 @@
 # Sentinel
 
-Sentinel is a fraud analyst workspace for screening suspicious transfers, triaging alerts, and investigating connected money movement. It combines a live monitoring console, an incident queue, case review flows, and interactive network graphs so analysts can move from detection to explanation in one product.
+Sentinel is an AI-assisted fraud analyst workspace for detecting suspicious transfers, triaging high-risk alerts, and investigating connected money movement in real time.
 
-This repository contains the full stack behind Sentinel:
+It combines:
 
-- a `Next.js` frontend for analyst workflows
-- a `FastAPI` backend for scoring, incident generation, and graph data
-- demo datasets for case review, live monitoring, and synthetic scenarios
+- a live fraud monitor with scenario injection
+- an analyst incident queue for triage
+- interactive network exposure graphs
+- explainable decision logic
+- business-impact metrics for demo storytelling
+- CSV upload analysis for ad hoc datasets
 
-Core product flows run locally without a live model connection. When `OPENAI_*` settings are configured, Sentinel can also support explanation and chat features for incidents and transactions.
+The goal is simple: help analysts understand not just that something is risky, but why it was flagged, what pushed it from review to block, and what value was protected.
 
-## Product Highlights
+## Why Sentinel
 
-- Prioritized incident queue designed for fast screening and review
-- Live monitoring dashboard with synthetic transaction streaming
-- Scenario injection for laundering rings, account takeover, smurfing, mule fan-out, and related fraud patterns
-- Incident and case detail views with transaction, behavior, and network context
-- Interactive investigation graphs, including replay controls on incident graphs
-- CSV upload flow for live-style transaction analysis
-- In-app documentation and an experimental 3D network view
+Traditional fraud tools are often strong at scoring individual transactions but weak at showing:
 
-## Stack
+- how fraud signals interact
+- where network exposure changes the decision
+- what a human analyst should do next
+- what business value the detection system created
+
+Sentinel addresses that by combining anomaly scoring, deterministic rule scoring, and network analysis in one analyst-focused product.
+
+## What The App Includes
+
+- `Incident dashboard` for triage, queue filtering, scenario injection, and investigation
+- `Live monitor` for streaming synthetic transactions and real-time fraud alerts
+- `Decision logic` that explains top driver, tipping point, and counterfactual outcomes
+- `Business impact` metrics such as suspicious dollars prevented and analyst time saved
+- `Network exposure graphs` for graph-based investigation and replay
+- `Case review flows` for deterministic fraud demo cases
+- `Upload flow` that turns a CSV into a live-style fraud report
+- `Documentation page` that explains the product and scoring logic in-app
+
+## Core Demo Story
+
+Sentinel is strongest when shown as a full analyst workflow:
+
+1. Inject a fraud scenario in the live monitor.
+2. Watch the alert enter the queue with scoring and explanation.
+3. Open the decision logic and show what pushed the alert into `hold` or `block`.
+4. Use the graph view to explain the network exposure.
+5. Show business-impact metrics to answer the “so what?” question.
+
+## Tech Stack
 
 ### Frontend
 
@@ -35,15 +60,16 @@ Core product flows run locally without a live model connection. When `OPENAI_*` 
 ### Backend
 
 - `FastAPI`
+- `Python`
 - `pandas`
 - `scikit-learn`
 - `networkx`
 - `python-dotenv`
 
-### AI Integration
+### AI
 
-- OpenAI-compatible client configuration through `OPENAI_API_KEY`, `OPENAI_MODEL`, and `OPENAI_BASE_URL`
-- Deterministic scoring and fallback-friendly product flows when AI is not configured
+- OpenAI-compatible chat/explanation integration
+- deterministic fallback flows when no model is configured
 
 ## Repository Layout
 
@@ -56,15 +82,20 @@ GenAI-Genesis/
 └── README.md
 ```
 
-## Architecture
+## Important Routes
 
-- `frontend/` renders the landing page, dashboard, live monitor, case review, uploads, documentation, and graph experiences.
-- `backend/app/services/live_monitor.py` powers the streaming demo feed, scenario injection, and live risk scoring.
-- `backend/app/services/incidents.py` builds the incident queue, triage panel payloads, incident details, and incident graphs.
-- `backend/app/services/sentinel.py` powers deterministic case analysis, transaction detail, behavior profiles, and supporting explanation flows.
-- `data/` contains the CSV and JSON assets used by the demo product.
+- `/` landing page
+- `/dashboard` incident queue and triage workspace
+- `/live` real-time fraud monitoring
+- `/incidents/[id]` incident detail
+- `/incidents/[id]/graph` incident network graph
+- `/cases/[id]` case review
+- `/cases/[id]/graph` case network graph
+- `/upload` CSV upload and instant report generation
+- `/documentation` in-app documentation
+- `/3d-network` experimental graph visualization
 
-## Local Development
+## Local Setup
 
 ### Backend
 
@@ -76,9 +107,17 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-The backend runs at `http://127.0.0.1:8000`.
+If you use Fish:
 
-The API reads environment variables from either the repo root `.env` or `backend/.env`.
+```fish
+cd backend
+python3 -m venv .venv
+source .venv/bin/activate.fish
+pip install -r requirements.txt
+uvicorn app.main:app --reload
+```
+
+Backend runs at `http://127.0.0.1:8000`.
 
 ### Frontend
 
@@ -88,52 +127,41 @@ npm install
 npm run dev
 ```
 
-The frontend runs at `http://127.0.0.1:3000`.
+Frontend runs at `http://127.0.0.1:3000`.
 
-Useful scripts:
+Useful frontend scripts:
 
-- `npm run dev` starts the local Next.js dev server
-- `npm run dev:fresh` clears `.next` and starts a clean dev session
-- `npm run reset` clears `.next` without starting the app
-- `npm run build` creates a production build
+- `npm run dev` starts the dev server
+- `npm run dev:fresh` clears `.next` and starts fresh
+- `npm run reset` clears `.next`
+- `npm run build` runs a production build
 - `npm run start` serves the production build
 
-## Environment Configuration
+## Environment Variables
 
-### Backend variables
+The backend reads from either the repo root `.env` or `backend/.env`.
+
+### Backend
 
 ```env
 FRONTEND_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 OPENAI_API_KEY=
 OPENAI_MODEL=gpt-4o-mini
-OPENAI_BASE_URL=https://qyt7893blb71b5d3.us-east-2.aws.endpoints.huggingface.cloud/v1
+OPENAI_BASE_URL=
 OPENAI_TIMEOUT_SECONDS=8
 ```
 
-### Frontend variable
+### Frontend
 
-Set this in `frontend/.env.local` when the frontend should point somewhere other than the default local API:
+Set this in `frontend/.env.local` if needed:
 
 ```env
 NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
 ```
 
-If `NEXT_PUBLIC_API_BASE_URL` is unset, the frontend falls back to `http://127.0.0.1:8000`.
+If unset, the frontend defaults to `http://127.0.0.1:8000`.
 
-## Key Routes
-
-- `/` landing page
-- `/dashboard` incident queue and triage workspace
-- `/live` live monitoring dashboard
-- `/incidents/[id]` incident detail
-- `/incidents/[id]/graph` incident network graph with replay controls
-- `/cases/[id]` case review page
-- `/cases/[id]/graph` case network graph
-- `/upload` transaction upload flow
-- `/documentation` in-app product documentation
-- `/3d-network` experimental 3D visualization
-
-## Useful API Endpoints
+## API Endpoints
 
 - `GET /api/health`
 - `GET /api/incidents/queue`
@@ -143,10 +171,21 @@ If `NEXT_PUBLIC_API_BASE_URL` is unset, the frontend falls back to `http://127.0
 - `GET /api/incidents/{incident_id}/graph`
 - `GET /api/live/bootstrap`
 - `GET /api/live/stream`
+- `GET /api/live/scenario`
 - `POST /api/uploads/transactions/live`
+
+## Differentiators
+
+What makes Sentinel stand out:
+
+- `Multi-layer scoring`: anomaly + rules + network
+- `Decision transparency`: top driver, tipping point, and counterfactuals
+- `Investigation UX`: queue, graph, replay, and detail views in one workflow
+- `Business framing`: protected dollars, isolated accounts, analyst time saved
+- `Demo reliability`: reproducible fraud scenarios on demand
 
 ## Notes
 
-- Sentinel's core dashboards and scoring flows do not require a live LLM.
-- The in-app documentation page provides additional product context from inside the analyst console.
-- The 3D network page is exploratory and should be treated as a demo surface rather than the main investigation workflow.
+- Sentinel works without a live LLM for core scoring and demo flows.
+- AI explanations enhance the experience but are not required for the main product.
+- The 3D network page is experimental and should be treated as an optional demo surface.
