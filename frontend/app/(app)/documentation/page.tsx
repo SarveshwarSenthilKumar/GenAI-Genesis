@@ -1,11 +1,9 @@
 ﻿"use client";
 
 import { useState } from "react";
-import { useTheme } from "next-themes";
 import { Shield, Network, Users, Eye, TrendingUp, Cpu, Activity, Target, BarChart3 } from "lucide-react";
 
 export default function DocumentationPage() {
-  const { resolvedTheme } = useTheme();
   const [activeSection, setActiveSection] = useState("overview");
 
   const sections = [

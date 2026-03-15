@@ -115,7 +115,7 @@ export default function UploadPage() {
             <h1 className="mt-2 font-serif text-3xl text-ink">
               Upload transaction data
             </h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted">
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted">
               We will sample the first 50 rows to infer the schema, then generate a
               risk report that mirrors the live monitor experience.
             </p>
