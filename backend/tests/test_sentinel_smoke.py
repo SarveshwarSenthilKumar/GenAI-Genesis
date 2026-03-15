@@ -1,5 +1,8 @@
+from datetime import timedelta
+from types import SimpleNamespace
+
 from app.services.incidents import IncidentService
-from app.services.live_detection import detect_fraud_rings
+from app.services.live_detection import RuleEngine, detect_fraud_rings, engineer_transaction_features
 from app.services.live_monitor import LiveMonitorService
 from app.services.sentinel import service
 
@@ -84,3 +87,49 @@ def test_ring_cluster_ids_are_stable_for_same_transactions():
     assert [alert.cluster_id for alert in first_alerts] == [
         alert.cluster_id for alert in second_alerts
     ]
+
+
+def test_velocity_signal_detects_short_transfer_bursts():
+    live_service = LiveMonitorService()
+    engine = live_service.engine
+    sender, receiver = engine.accounts[0], engine.accounts[1]
+    base_time = engine.current_time
+    transactions = []
+
+    for index, offset in enumerate([0, 20, 40, 70, 90]):
+        transactions.append(
+            engine._base_transaction(
+                sender=sender,
+                receiver=receiver,
+                amount=250.0 + index,
+                ip_country=engine.account_country[sender],
+                transaction_type="transfer",
+                tag="velocity-test",
+                is_fraud=True,
+                timestamp_override=base_time + timedelta(seconds=offset),
+            )
+        )
+
+    enriched = engineer_transaction_features(transactions)
+    suspicious_hits = RuleEngine().evaluate(enriched[2], {})
+    high_risk_hits = RuleEngine().evaluate(enriched[-1], {})
+
+    assert any(
+        hit.name == "transfer_velocity_suspicious"
+        and "3 transfers within 40 seconds" in hit.reason
+        for hit in suspicious_hits
+    )
+    assert any(
+        hit.name == "transfer_velocity_high"
+        and "5 transfers within 90 seconds" in hit.reason
+        for hit in high_risk_hits
+    )
+
+    alert = SimpleNamespace(
+        rule_reasons=[hit.reason for hit in high_risk_hits],
+        type="transaction",
+    )
+    behavior_anomalies = IncidentService()._behavior_anomalies(alert)
+
+    assert "rapid transfer velocity detected" in behavior_anomalies
+    assert "5 transfers within 90 seconds" in behavior_anomalies

@@ -142,79 +142,126 @@ def stable_ring_cluster_id(accounts: Sequence[str]) -> str:
 class RuleEngine:
     def evaluate(self, txn: dict, state: dict) -> list[RuleHit]:
         del state
-        rules = [
-            (
-                "high_amount_vs_baseline",
-                txn["amount_vs_sender_avg_30d"] >= 3.0,
-                0.15,
-                "amount is more than 3x sender baseline",
-            ),
-            (
-                "new_device_high_amount",
-                txn["is_new_device"] and txn["amount"] > 7000,
-                0.20,
-                "high-value transaction from unseen device",
-            ),
-            (
-                "new_ip_new_country",
-                txn["is_new_ip"] and txn["is_new_country"],
-                0.15,
-                "transaction originated from unseen IP and country",
-            ),
-            (
-                "impossible_travel",
-                txn["geo_velocity_kmh"] > 900,
-                0.25,
-                "impossible travel pattern detected",
-            ),
-            (
-                "velocity_spike",
-                txn["sender_txn_count_5m"] >= 5,
-                0.20,
-                "high transaction burst within 5 minutes",
-            ),
-            (
-                "many_new_recipients",
-                txn["sender_unique_receivers_24h"] >= 8,
-                0.15,
-                "sender transacted with unusually many recipients",
-            ),
-            (
-                "shared_device",
-                txn["accounts_per_device_24h"] >= 4,
-                0.20,
-                "device linked to multiple accounts",
-            ),
-            (
-                "shared_ip",
-                txn["accounts_per_ip_24h"] >= 5,
-                0.20,
-                "IP linked to multiple accounts",
-            ),
-            (
-                "smurfing",
-                txn["count_transfers_just_below_threshold_24h"] >= 3,
-                0.25,
-                "multiple transfers just below reporting threshold",
-            ),
-            (
-                "dormant_activation",
-                txn["dormant_days"] >= 90 and txn["sender_txn_count_1h"] >= 3,
-                0.15,
-                "previously dormant account became suddenly active",
-            ),
-            (
-                "rapid_multi_hop",
-                txn["hop_chain_length"] >= 3 and txn["time_to_cashout_sec"] <= 300,
-                0.30,
-                "funds moved rapidly through multiple accounts",
-            ),
-        ]
-        return [
-            RuleHit(name, triggered, points, reason)
-            for name, triggered, points, reason in rules
-            if triggered
-        ]
+        rules: list[RuleHit] = []
+
+        if txn["amount_vs_sender_avg_30d"] >= 3.0:
+            rules.append(
+                RuleHit(
+                    "high_amount_vs_baseline",
+                    True,
+                    0.15,
+                    "amount is more than 3x sender baseline",
+                )
+            )
+        if txn["is_new_device"] and txn["amount"] > 7000:
+            rules.append(
+                RuleHit(
+                    "new_device_high_amount",
+                    True,
+                    0.20,
+                    "high-value transaction from unseen device",
+                )
+            )
+        if txn["is_new_ip"] and txn["is_new_country"]:
+            rules.append(
+                RuleHit(
+                    "new_ip_new_country",
+                    True,
+                    0.15,
+                    "transaction originated from unseen IP and country",
+                )
+            )
+        if txn["geo_velocity_kmh"] > 900:
+            rules.append(
+                RuleHit(
+                    "impossible_travel",
+                    True,
+                    0.25,
+                    "impossible travel pattern detected",
+                )
+            )
+        if txn["velocity_high_risk"]:
+            rules.append(
+                RuleHit(
+                    "transfer_velocity_high",
+                    True,
+                    0.24,
+                    (
+                        "rapid transfer velocity detected: "
+                        f"{txn['velocity_transfer_count']} transfers within "
+                        f"{txn['velocity_window_sec']} seconds"
+                    ),
+                )
+            )
+        elif txn["velocity_suspicious"]:
+            rules.append(
+                RuleHit(
+                    "transfer_velocity_suspicious",
+                    True,
+                    0.16,
+                    (
+                        "rapid transfer velocity detected: "
+                        f"{txn['velocity_transfer_count']} transfers within "
+                        f"{txn['velocity_window_sec']} seconds"
+                    ),
+                )
+            )
+        if txn["sender_unique_receivers_24h"] >= 8:
+            rules.append(
+                RuleHit(
+                    "many_new_recipients",
+                    True,
+                    0.15,
+                    "sender transacted with unusually many recipients",
+                )
+            )
+        if txn["accounts_per_device_24h"] >= 4:
+            rules.append(
+                RuleHit(
+                    "shared_device",
+                    True,
+                    0.20,
+                    "device linked to multiple accounts",
+                )
+            )
+        if txn["accounts_per_ip_24h"] >= 5:
+            rules.append(
+                RuleHit(
+                    "shared_ip",
+                    True,
+                    0.20,
+                    "IP linked to multiple accounts",
+                )
+            )
+        if txn["count_transfers_just_below_threshold_24h"] >= 3:
+            rules.append(
+                RuleHit(
+                    "smurfing",
+                    True,
+                    0.25,
+                    "multiple transfers just below reporting threshold",
+                )
+            )
+        if txn["dormant_days"] >= 90 and txn["sender_txn_count_1h"] >= 3:
+            rules.append(
+                RuleHit(
+                    "dormant_activation",
+                    True,
+                    0.15,
+                    "previously dormant account became suddenly active",
+                )
+            )
+        if txn["hop_chain_length"] >= 3 and txn["time_to_cashout_sec"] <= 300:
+            rules.append(
+                RuleHit(
+                    "rapid_multi_hop",
+                    True,
+                    0.30,
+                    "funds moved rapidly through multiple accounts",
+                )
+            )
+
+        return rules
 
 
 def engineer_transaction_features(transactions: Sequence[dict]) -> list[dict]:
@@ -238,6 +285,21 @@ def engineer_transaction_features(transactions: Sequence[dict]) -> list[dict]:
             if ts - parse_timestamp(prev["timestamp"]) <= timedelta(days=1)
         ]
         sender_history = sender_histories[sender]
+        sender_30s = [
+            prev
+            for prev in sender_history
+            if ts - parse_timestamp(prev["timestamp"]) <= timedelta(seconds=30)
+        ]
+        sender_60s = [
+            prev
+            for prev in sender_history
+            if ts - parse_timestamp(prev["timestamp"]) <= timedelta(seconds=60)
+        ]
+        sender_120s = [
+            prev
+            for prev in sender_history
+            if ts - parse_timestamp(prev["timestamp"]) <= timedelta(seconds=120)
+        ]
         sender_5m = [
             prev
             for prev in sender_history
@@ -279,12 +341,31 @@ def engineer_transaction_features(transactions: Sequence[dict]) -> list[dict]:
             if 9000 <= prev["amount"] < 10000 and prev["transaction_type"] == "transfer"
         ]
 
+        velocity_transfer_count = 0
+        velocity_window_sec = 0
+        velocity_suspicious = False
+        velocity_high_risk = False
+        if item["transaction_type"] == "transfer":
+            if len(sender_120s) + 1 >= 5:
+                earliest = min(parse_timestamp(prev["timestamp"]) for prev in sender_120s)
+                velocity_transfer_count = len(sender_120s) + 1
+                velocity_window_sec = max(int((ts - earliest).total_seconds()), 1)
+                velocity_high_risk = True
+            elif len(sender_60s) + 1 >= 3:
+                earliest = min(parse_timestamp(prev["timestamp"]) for prev in sender_60s)
+                velocity_transfer_count = len(sender_60s) + 1
+                velocity_window_sec = max(int((ts - earliest).total_seconds()), 1)
+                velocity_suspicious = True
+
         item["hour_of_day"] = ts.hour
         item["day_of_week"] = ts.weekday()
         item["log_amount"] = round(math.log1p(item["amount"]), 4)
         item["amount_vs_sender_avg_30d"] = round(
             item["amount"] / max(item["sender_avg_amount_30d"], 1.0), 3
         )
+        item["sender_txn_count_30s"] = len(sender_30s) + 1
+        item["sender_txn_count_60s"] = len(sender_60s) + 1
+        item["sender_txn_count_120s"] = len(sender_120s) + 1
         item["sender_txn_count_5m"] = len(sender_5m) + 1
         item["sender_txn_count_1h"] = len(sender_1h) + 1
         item["sender_txn_count_24h"] = len(sender_24h) + 1
@@ -307,6 +388,10 @@ def engineer_transaction_features(transactions: Sequence[dict]) -> list[dict]:
         item["dormant_days"] = min(
             item["sender_account_age_days"], int(time_since_last / 86400.0)
         )
+        item["velocity_transfer_count"] = velocity_transfer_count
+        item["velocity_window_sec"] = velocity_window_sec
+        item["velocity_suspicious"] = int(velocity_suspicious)
+        item["velocity_high_risk"] = int(velocity_high_risk)
 
         active_flow = account_flow_state.get(sender)
         flow_gap_sec = None

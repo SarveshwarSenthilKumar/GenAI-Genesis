@@ -405,6 +405,17 @@ function buildDeviceSignals(detail: IncidentDetailResponse) {
 function buildBehaviorSignalsList(detail: IncidentDetailResponse) {
   const joined = detail.behavior_anomalies.join(" ").toLowerCase();
   const signals: string[] = [];
+  const velocityMatch = detail.behavior_anomalies
+    .join(" ")
+    .match(/(\d+)\s+transfers within\s+(\d+)\s+seconds/i);
+
+  if (/rapid|velocity/.test(joined)) {
+    signals.push("rapid transfer velocity detected");
+  }
+
+  if (velocityMatch) {
+    signals.push(`${velocityMatch[1]} transfers within ${velocityMatch[2]} seconds`);
+  }
 
   if (
     /timing|login-to-payment|login to payment/.test(joined) ||

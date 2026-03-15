@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useEffect, useRef } from "react";
 import { animate, createTimeline, stagger } from "animejs";
-import { ThemeToggle } from "./theme-toggle";
+
+import { HeroShaderBackground } from "./hero-shader-background";
 
 const workflowSteps = [
   {
@@ -334,66 +335,66 @@ export function LandingPage() {
   }, []);
 
   return (
-    <main ref={rootRef} className="pb-8">
-      <section className="relative overflow-hidden rounded-[40px] border border-line/80 bg-surface shadow-frame dark:shadow-[0_28px_90px_rgba(0,0,0,0.4)]">
+    <main
+      ref={rootRef}
+      className="dark relative left-1/2 min-h-screen w-screen -translate-x-1/2 -mt-5 overflow-hidden pb-16 text-slate-100 sm:-mt-5 lg:-mt-5"
+    >
+      <HeroShaderBackground className="pointer-events-none fixed inset-0 -z-20" />
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-[linear-gradient(180deg,rgba(2,8,20,0.18)_0%,rgba(2,8,20,0.36)_52%,rgba(2,8,20,0.78)_100%)]" />
+      <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_88%_12%,rgba(214,231,255,0.3),transparent_0%,transparent_26%),radial-gradient(circle_at_14%_82%,rgba(48,92,178,0.14),transparent_0%,transparent_26%)]" />
+
+      <section className="relative flex min-h-screen overflow-hidden">
         <div
           data-landing-glow
-          className="absolute -left-16 top-12 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(37,99,235,0.14),transparent_66%)] opacity-0 blur-2xl dark:opacity-20"
+          className="absolute -left-16 top-12 h-72 w-72 rounded-full bg-[radial-gradient(circle,rgba(37,99,235,0.14),transparent_66%)] opacity-0 blur-2xl"
         />
         <div
           data-landing-glow
-          className="absolute right-[-5rem] top-[-2rem] h-80 w-80 rounded-full bg-[radial-gradient(circle,rgba(191,219,254,0.8),transparent_66%)] opacity-0 blur-3xl dark:opacity-30"
+          className="absolute right-[-5rem] top-[-2rem] h-80 w-80 rounded-full bg-[radial-gradient(circle,rgba(191,219,254,0.58),transparent_66%)] opacity-0 blur-3xl"
         />
 
-        <div className="relative mx-auto max-w-[1160px] px-6 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
-          <div className="flex justify-between items-start">
-            <div data-landing-reveal className="opacity-0">
-              <div>
-                <p className="text-xs uppercase tracking-[0.34em] text-muted dark:text-slate-400">
-                  AI-native fraud defense
-                </p>
-                <p className="mt-3 font-serif text-[4.1rem] font-semibold leading-none text-ink sm:text-[4.8rem] lg:text-[5.2rem] dark:text-slate-100">
-                  Sentinel
-                </p>
-              </div>
-            </div>
-            <div data-landing-reveal className="opacity-0">
-              <ThemeToggle />
+        <div className="relative mx-auto flex w-full max-w-[1280px] flex-col px-6 py-5 sm:px-8 sm:py-6 lg:px-10 lg:py-7">
+          <div data-landing-reveal className="opacity-0">
+            <div>
+              <p className="font-serif font-bold text-[2rem] leading-none tracking-[-0.03em] text-white sm:text-[3.85rem]">
+                Sentinel
+              </p>
             </div>
           </div>
 
-          <div className="grid gap-10 pt-8 lg:grid-cols-[1fr_0.92fr] lg:items-center">
-            <div className="max-w-[34rem]">
+          <div className="grid flex-1 gap-10 pt-4 lg:grid-cols-[1.14fr_0.86fr] lg:items-center lg:gap-16 lg:pt-5">
+            <div className="max-w-[56rem] self-center">
               <p
                 data-landing-reveal
-                className="text-xs uppercase tracking-[0.36em] text-muted dark:text-slate-400 opacity-0"
+                className="text-[12px] uppercase tracking-[0.42em] text-slate-400 opacity-0"
               >
-                Triage faster, investigate deeper
+                AI-native fraud defense
               </p>
               <h1
                 data-landing-reveal
-                className="mt-5 font-serif text-[3.5rem] leading-[0.92] text-ink opacity-0 sm:text-[4.5rem] lg:text-[5.4rem] dark:text-slate-100"
+                className="mt-4 max-w-[17.5ch] font-serif text-[4rem] leading-[1] tracking-[-0.018em] text-white opacity-0 sm:text-[5rem] lg:text-[6.7rem]"
               >
                 Detect fraud beyond transactions.
               </h1>
               <p
                 data-landing-reveal
-                className="mt-6 max-w-xl text-lg leading-8 text-muted opacity-0 dark:text-slate-300"
+                className="mt-7 max-w-[33rem] text-[1.08rem] leading-8 text-slate-200/88 opacity-0"
               >
-                Behavioral identity and network intelligence in one analyst workflow.
+                Behavioral identity and network intelligence in one analyst workflow,
+                shaped for faster triage and more confident investigation.
               </p>
 
-              <div data-landing-reveal className="mt-7 flex flex-col items-start opacity-0">
+              <div data-landing-reveal className="mt-9 flex w-full flex-col items-start gap-3 opacity-0 sm:flex-row sm:flex-wrap">
                 <Link
                   data-landing-cta
                   href="/dashboard"
-                  className="inline-flex min-w-[18rem] items-center justify-center rounded-full bg-ink px-10 py-5 text-lg font-medium text-paper shadow-frame transition-all duration-200 hover:-translate-y-[1px] hover:bg-slate-800 hover:shadow-[0_22px_46px_rgba(0,0,0,0.3)] dark:bg-slate-100 dark:text-slate-900 dark:hover:bg-slate-200"
+                  className="inline-flex w-full max-w-[22rem] items-center justify-center rounded-full bg-white px-8 py-4 text-base font-medium text-slate-950 shadow-[0_20px_50px_rgba(15,23,42,0.28)] transition-all duration-200 hover:-translate-y-[1px] hover:bg-slate-200 sm:w-auto sm:min-w-[16rem]"
                 >
                   Open the analyst console
                 </Link>
                 <Link
                   href="/upload"
-                  className="mt-3 inline-flex min-w-[18rem] items-center justify-center rounded-full border border-[#0B1324]/20 bg-white px-10 py-4 text-sm font-medium text-[#0B1324] transition hover:bg-[#F8FAFC]"
+                  className="inline-flex w-full max-w-[22rem] items-center justify-center rounded-full border border-white/14 bg-white/6 px-8 py-4 text-sm font-medium text-white transition hover:border-white/24 hover:bg-white/10 sm:w-auto sm:min-w-[16rem]"
                 >
                   Upload transaction data
                 </Link>
@@ -404,13 +405,17 @@ export function LandingPage() {
               <InvestigationTrace />
             </div>
           </div>
+        </div>
+      </section>
 
-          <div className="grid gap-8 pt-24 lg:grid-cols-[0.8fr_1.2fr]">
+      <section className="relative">
+        <div className="relative mx-auto max-w-[1280px] px-6 pb-16 pt-8 sm:px-8 lg:px-10 lg:pb-20 lg:pt-12">
+          <div className="grid gap-8 lg:grid-cols-[0.8fr_1.2fr]">
             <div data-landing-reveal className="space-y-3 opacity-0">
-              <p className="text-xs uppercase tracking-[0.3em] text-muted dark:text-slate-400">
+              <p className="text-[11px] uppercase tracking-[0.38em] text-slate-500">
                 How Sentinel works
               </p>
-              <h2 className="max-w-md font-serif text-4xl leading-tight text-ink sm:text-[3.35rem] dark:text-slate-100">
+              <h2 className="max-w-md font-serif text-4xl leading-tight text-white sm:text-[3.35rem]">
                 Fraud revealed through transaction networks.
               </h2>
             </div>
@@ -423,14 +428,16 @@ export function LandingPage() {
                   className="grid gap-3 pb-4 opacity-0 sm:grid-cols-[7rem_1fr]"
                 >
                   <div>
-                    <p className="text-xs uppercase tracking-[0.26em] text-muted dark:text-slate-400">
+                    <p className="text-xs uppercase tracking-[0.26em] text-slate-500">
                       {step.index}
                     </p>
-                    <p className="mt-1 text-base font-medium text-ink dark:text-slate-100">
+                    <p className="mt-1 text-base font-medium text-white">
                       {step.title}
                     </p>
                   </div>
-                  <p className="max-w-xl text-base leading-7 text-muted dark:text-slate-300">{step.body}</p>
+                  <p className="max-w-xl text-base leading-7 text-slate-300">
+                    {step.body}
+                  </p>
                 </li>
               ))}
             </ol>
@@ -443,26 +450,26 @@ export function LandingPage() {
 
 function InvestigationTrace() {
   return (
-    <div className="relative mx-auto w-full max-w-[34rem] lg:mx-0">
-      <div className="absolute left-8 top-6 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.14),transparent_70%)] blur-3xl dark:opacity-60" />
-      <div className="absolute right-0 bottom-8 h-44 w-44 rounded-full bg-[radial-gradient(circle,rgba(245,158,11,0.12),transparent_68%)] blur-3xl dark:opacity-60" />
+    <div className="relative mx-auto w-full max-w-[38rem] lg:mx-0">
+      <div className="absolute left-8 top-6 h-56 w-56 rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.14),transparent_70%)] blur-3xl opacity-60" />
+      <div className="absolute right-0 bottom-8 h-44 w-44 rounded-full bg-[radial-gradient(circle,rgba(245,158,11,0.12),transparent_68%)] blur-3xl opacity-60" />
 
-      <div className="relative overflow-hidden rounded-[30px] border border-line/70 bg-gradient-to-br from-slate-100 via-slate-50 to-slate-100 p-6 shadow-frame dark:from-slate-800 dark:via-slate-700 dark:to-slate-800">
-        <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.08),transparent_40%,transparent_65%,rgba(255,255,255,0.03))] dark:opacity-50" />
+      <div className="relative overflow-hidden rounded-[34px] border border-white/20 bg-[linear-gradient(180deg,rgba(255,255,255,0.045),rgba(255,255,255,0.025))] p-7 shadow-[0_20px_70px_rgba(0,0,0,0.16)] backdrop-blur-[8px]">
+        <div className="absolute inset-0 bg-[linear-gradient(135deg,rgba(255,255,255,0.06),transparent_38%,transparent_68%,rgba(255,255,255,0.02))] opacity-60" />
 
         <div className="relative">
-          <p className="text-[11px] uppercase tracking-[0.26em] text-slate-800 dark:text-slate-400 drop-shadow-sm">
+          <p className="text-[11px] uppercase tracking-[0.32em] text-slate-300 drop-shadow-sm">
             Investigation trace
           </p>
-          <p className="mt-2 text-sm text-slate-900 dark:text-slate-200 drop-shadow-sm">
+          <p className="mt-2 text-sm text-slate-100 drop-shadow-sm">
             Suspicious money movement across a network
           </p>
         </div>
 
-        <div className="relative mt-5">
+        <div className="relative mt-10">
           <svg
             viewBox="0 0 420 300"
-            className="h-[20.75rem] w-full overflow-visible"
+            className="h-[22rem] w-full overflow-visible"
             aria-label="Animated investigation trace"
           >
             <defs>
@@ -476,7 +483,7 @@ function InvestigationTrace() {
               </linearGradient>
             </defs>
 
-            <g opacity="0.2">
+            <g opacity="0.14">
               <path d={tracePaths.ab} fill="none" stroke="#93C5FD" strokeWidth="5" strokeLinecap="round" />
               <path d={tracePaths.bc} fill="none" stroke="#93C5FD" strokeWidth="5" strokeLinecap="round" />
               <path d={tracePaths.bd} fill="none" stroke="#93C5FD" strokeWidth="5" strokeLinecap="round" />
@@ -525,7 +532,7 @@ function InvestigationTrace() {
                 <circle
                   r={id === "E" ? 24 : 18}
                   fill="none"
-                  stroke={id === "E" ? "rgba(245,158,11,0.22)" : "rgba(148,163,184,0.18)"}
+                  stroke={id === "E" ? "rgba(245,158,11,0.18)" : "rgba(148,163,184,0.12)"}
                   strokeWidth="1.2"
                 />
                 {id === "E" ? (
@@ -542,20 +549,17 @@ function InvestigationTrace() {
                   data-trace-core={id}
                   r={id === "E" ? 16 : id === "B" || id === "D" ? 12 : 11}
                   fill="#F8FBFF"
-                  stroke={id === "E" ? "#60A5FA" : "#60A5FA"}
+                  stroke="#60A5FA"
                   strokeWidth={id === "E" ? 3 : 2.6}
                   style={{
                     filter:
                       id === "E"
-                        ? "drop-shadow(0 0 12px rgba(251,146,60,0.16))"
-                        : "drop-shadow(0 0 10px rgba(125,211,252,0.12))",
+                        ? "drop-shadow(0 0 16px rgba(251,146,60,0.18))"
+                        : "drop-shadow(0 0 12px rgba(125,211,252,0.18))",
                   }}
                 />
                 {id !== "E" ? (
-                  <circle
-                    r={id === "B" || id === "D" ? 3.25 : 3}
-                    fill="rgba(15,23,42,0.88)"
-                  />
+                  <circle r={id === "B" || id === "D" ? 3.25 : 3} fill="rgba(15,23,42,0.88)" />
                 ) : null}
                 {id === "E" ? <circle r="4" fill="rgba(255,248,235,0.95)" /> : null}
               </g>
@@ -568,8 +572,7 @@ function InvestigationTrace() {
             >
               <text
                 fontSize="10"
-                fill="rgba(30,41,59,0.8)"
-                className="dark:fill-slate-300"
+                fill="rgba(226,232,240,0.8)"
                 style={{ letterSpacing: "0.18em" }}
                 textAnchor="middle"
               >
@@ -593,7 +596,7 @@ function InvestigationTrace() {
               r="6"
               fill="#7DD3FC"
               opacity="0"
-              style={{ filter: "drop-shadow(0 0 12px rgba(125,211,252,0.9))" }}
+              style={{ filter: "drop-shadow(0 0 16px rgba(125,211,252,0.95))" }}
             />
             <circle
               data-trace-signal="branch"
@@ -602,7 +605,7 @@ function InvestigationTrace() {
               r="6"
               fill="#FCD34D"
               opacity="0"
-              style={{ filter: "drop-shadow(0 0 12px rgba(252,211,77,0.9))" }}
+              style={{ filter: "drop-shadow(0 0 16px rgba(252,211,77,0.92))" }}
             />
           </svg>
         </div>

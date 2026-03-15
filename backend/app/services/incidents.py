@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 from difflib import SequenceMatcher
+import re
 from typing import Any
 import networkx as nx
 
@@ -365,6 +366,12 @@ class IncidentService:
             reasons.append("login-to-payment sequence implies impossible travel")
         if "many recipients" in joined:
             reasons.append("beneficiary behavior drifted from the usual payment pattern")
+        velocity_match = self._velocity_match(alert)
+        if velocity_match:
+            reasons.append("rapid transfer velocity detected")
+            reasons.append(
+                f"{velocity_match.group('count')} transfers within {velocity_match.group('window')} seconds"
+            )
         if not reasons:
             reasons.append("behavior profile is elevated because the transfer context deviates from baseline")
         return self._combine_unique(reasons)
@@ -380,9 +387,19 @@ class IncidentService:
             score += 0.2
         if "many recipients" in joined:
             score += 0.1
+        if self._velocity_match(alert):
+            score += 0.18
         if alert.type == "ring":
             score += 0.06
         return min(score, 0.95)
+
+    def _velocity_match(self, alert) -> re.Match[str] | None:
+        pattern = r"rapid transfer velocity detected:\s*(?P<count>\d+)\s+transfers within\s+(?P<window>\d+)\s+seconds"
+        for reason in alert.rule_reasons:
+            match = re.search(pattern, reason, re.IGNORECASE)
+            if match:
+                return match
+        return None
 
     def _behavior_profile(self, alert, tx: dict[str, Any] | None) -> IncidentBehaviorProfile:
         subject = alert.sender_account or "cluster operator"
