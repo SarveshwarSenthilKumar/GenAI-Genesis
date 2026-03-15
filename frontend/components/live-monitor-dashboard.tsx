@@ -437,6 +437,36 @@ export function LiveMonitorDashboard({
                         <SignalBar label="Rules" value={alert.rule_score} tone="review" />
                         <SignalBar label="Network" value={alert.network_risk_score} tone="block" />
                       </div>
+
+                      {alert.why_flagged.top_driver ||
+                      alert.why_flagged.tipping_point ||
+                      alert.why_flagged.counterfactuals.length ? (
+                        <div className="mt-4 rounded-[18px] border border-line/70 bg-panel/70 p-4">
+                          <p className="text-xs uppercase tracking-[0.18em] text-muted">
+                            Decision logic
+                          </p>
+                          <div className="mt-3 space-y-2 text-sm leading-6 text-muted">
+                            {alert.why_flagged.top_driver ? (
+                              <p>
+                                <span className="font-medium text-ink">Top driver:</span>{" "}
+                                {alert.why_flagged.top_driver}
+                              </p>
+                            ) : null}
+                            {alert.why_flagged.tipping_point ? (
+                              <p>
+                                <span className="font-medium text-ink">Tipping point:</span>{" "}
+                                {alert.why_flagged.tipping_point}
+                              </p>
+                            ) : null}
+                            {alert.why_flagged.counterfactuals.map((item) => (
+                              <p key={`${alert.alert_title}-${item}`}>
+                                <span className="font-medium text-ink">Counterfactual:</span>{" "}
+                                {item}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
 
                     <div className="rounded-[20px] border border-line/70 bg-panel/80 p-4">
@@ -522,6 +552,29 @@ export function LiveMonitorDashboard({
                       />
                     ))}
                   </div>
+                  {alert.why_flagged.top_driver ||
+                  alert.why_flagged.tipping_point ||
+                  alert.why_flagged.counterfactuals.length ? (
+                    <div className="mt-4 rounded-[18px] border border-line/70 bg-panel/70 p-4 text-sm leading-6 text-muted">
+                      {alert.why_flagged.top_driver ? (
+                        <p>
+                          <span className="font-medium text-ink">Top driver:</span>{" "}
+                          {alert.why_flagged.top_driver}
+                        </p>
+                      ) : null}
+                      {alert.why_flagged.tipping_point ? (
+                        <p className={alert.why_flagged.top_driver ? "mt-2" : ""}>
+                          <span className="font-medium text-ink">Tipping point:</span>{" "}
+                          {alert.why_flagged.tipping_point}
+                        </p>
+                      ) : null}
+                      {alert.why_flagged.counterfactuals.map((item) => (
+                        <p key={`${alert.alert_title}-counterfactual-${item}`} className="mt-2">
+                          <span className="font-medium text-ink">Counterfactual:</span> {item}
+                        </p>
+                      ))}
+                    </div>
+                  ) : null}
                 </article>
               ))
             ) : (

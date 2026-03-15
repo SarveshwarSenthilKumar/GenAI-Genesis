@@ -162,6 +162,9 @@ class LiveMonitorWhyFlagged(BaseModel):
     breakdown: list[LiveMonitorBreakdownItem] = Field(default_factory=list)
     top_rule_reasons: list[str] = Field(default_factory=list)
     top_network_evidence: list[str] = Field(default_factory=list)
+    top_driver: str | None = None
+    tipping_point: str | None = None
+    counterfactuals: list[str] = Field(default_factory=list)
 
 
 class LiveMonitorAlert(BaseModel):

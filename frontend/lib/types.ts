@@ -233,6 +233,9 @@ export type LiveMonitorWhyFlagged = {
   breakdown: LiveMonitorBreakdownItem[];
   top_rule_reasons: string[];
   top_network_evidence: string[];
+  top_driver: string | null;
+  tipping_point: string | null;
+  counterfactuals: string[];
 };
 
 export type LiveMonitorAlert = {

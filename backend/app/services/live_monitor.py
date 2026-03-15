@@ -203,6 +203,25 @@ class LiveMonitorService:
                         ],
                         top_rule_reasons=[hit.reason for hit in rule_hits][:3],
                         top_network_evidence=network_evidence[:3],
+                        top_driver=self._top_driver(
+                            {
+                                "Anomaly": anomaly_score,
+                                "Rules": rule_score,
+                                "Network": network_score,
+                            }
+                        ),
+                        tipping_point=self._tipping_point(
+                            anomaly_score=anomaly_score,
+                            rule_score=rule_score,
+                            network_score=network_score,
+                            current_action=action,
+                        ),
+                        counterfactuals=self._counterfactuals(
+                            anomaly_score=anomaly_score,
+                            rule_score=rule_score,
+                            network_score=network_score,
+                            current_action=action,
+                        ),
                     ),
                     explanation=explanation,
                 )
@@ -258,6 +277,19 @@ class LiveMonitorService:
                             ),
                         ],
                         top_network_evidence=alert.evidence[:3],
+                        top_driver="Network",
+                        tipping_point=self._tipping_point(
+                            anomaly_score=0.0,
+                            rule_score=0.0,
+                            network_score=alert.risk_score,
+                            current_action=action,
+                        ),
+                        counterfactuals=self._counterfactuals(
+                            anomaly_score=0.0,
+                            rule_score=0.0,
+                            network_score=alert.risk_score,
+                            current_action=action,
+                        ),
                     ),
                     explanation=(
                         f"Cluster {alert.cluster_id} shows circular transfers across "
@@ -300,6 +332,80 @@ class LiveMonitorService:
             enriched=enriched,
             transaction_rows=transaction_rows,
         )
+
+    def _action_for_scores(
+        self, anomaly_score: float, rule_score: float, network_score: float
+    ) -> str:
+        final_risk = combine_scores(anomaly_score, rule_score, network_score)
+        return classify_risk(final_risk)[1]
+
+    def _top_driver(self, scores: dict[str, float]) -> str | None:
+        if not scores:
+            return None
+        label, value = max(scores.items(), key=lambda item: item[1])
+        if value <= 0:
+            return None
+        return label
+
+    def _tipping_point(
+        self,
+        anomaly_score: float,
+        rule_score: float,
+        network_score: float,
+        current_action: str,
+    ) -> str | None:
+        scenarios = [
+            (
+                "Anomaly scoring",
+                self._action_for_scores(0.0, rule_score, network_score),
+            ),
+            (
+                "Rules",
+                self._action_for_scores(anomaly_score, 0.0, network_score),
+            ),
+            (
+                "Network evidence",
+                self._action_for_scores(anomaly_score, rule_score, 0.0),
+            ),
+        ]
+        current_rank = self._action_rank(current_action)
+        best_shift: tuple[int, str, str] | None = None
+        for signal_name, action_without_signal in scenarios:
+            shift = current_rank - self._action_rank(action_without_signal)
+            if shift <= 0:
+                continue
+            candidate = (shift, signal_name, action_without_signal)
+            if best_shift is None or candidate[0] > best_shift[0]:
+                best_shift = candidate
+
+        if not best_shift:
+            return None
+
+        _, signal_name, action_without_signal = best_shift
+        return f"{signal_name} moved this alert from {action_without_signal} to {current_action}."
+
+    def _action_rank(self, action: str) -> int:
+        order = {"allow": 0, "review": 1, "hold": 2, "block": 3}
+        return order.get(action, 0)
+
+    def _counterfactuals(
+        self,
+        anomaly_score: float,
+        rule_score: float,
+        network_score: float,
+        current_action: str,
+    ) -> list[str]:
+        scenarios = [
+            ("Without anomaly scoring", self._action_for_scores(0.0, rule_score, network_score)),
+            ("Without rules", self._action_for_scores(anomaly_score, 0.0, network_score)),
+            ("Without network evidence", self._action_for_scores(anomaly_score, rule_score, 0.0)),
+        ]
+        messages: list[str] = []
+        for label, action in scenarios:
+            if action == current_action:
+                continue
+            messages.append(f"{label}, this would be {action}.")
+        return messages[:2]
 
     def _build_stats(
         self,
