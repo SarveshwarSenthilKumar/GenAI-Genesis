@@ -30,7 +30,7 @@ Tools:
 Sentinel is a demo-first fraud analyst console that unifies case review and live monitoring to help analysts quickly understand why a transfer was flagged. Aside from the sophisticated approach of an ensemble detection algorithm, the experience centers on a dashboard of prioritized cases, drill‑down views that surface behavior drift and anomaly signals, and an interactive network graph for tracing suspicious recipient paths. A live monitor streams synthetic transactions, applies rule scoring and anomaly scoring, and highlights ring‑like activity in real time, giving analysts a continuous sense of risk.
 
 # Additional Note:
-A more detailed documentation for Sentinel is included at the top right corner of the analyst console.
+A more detailed documentation for Sentinel is included at the top-right corner of the analyst console.
 
 # AI Use > 70% ?
 Yes.
