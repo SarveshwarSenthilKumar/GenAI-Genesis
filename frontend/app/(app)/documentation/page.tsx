@@ -19,10 +19,10 @@ export default function DocumentationPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+    <div className="relative left-1/2 right-1/2 min-h-screen w-screen -translate-x-1/2 bg-slate-100 px-4 text-slate-900 dark:bg-slate-900 dark:text-slate-100 sm:px-6 lg:px-8">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 backdrop-blur-lg">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="h-8 w-8 border-2 border-slate-300 dark:border-slate-600 rounded-lg flex items-center justify-center">
@@ -37,8 +37,8 @@ export default function DocumentationPage() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="py-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
           {/* Sidebar Navigation */}
           <nav className="lg:col-span-1">
             <div className="sticky top-24 space-y-1">
@@ -908,4 +908,3 @@ function VisualizationSection() {
     </div>
   );
 }
-
