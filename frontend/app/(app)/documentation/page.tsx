@@ -623,38 +623,42 @@ function NetworkAnalysisSection() {
         <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700 mb-8">
           <h3 className="text-xl font-bold mb-4 text-slate-900 dark:text-slate-100">Transaction Network Visualization</h3>
           
-          <div className="relative h-96 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4">
+          <div className="relative h-96 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 p-4 overflow-hidden">
             {/* Simplified network diagram */}
             <div className="absolute inset-0 flex items-center justify-center">
-              <div className="relative">
+              <div className="relative w-64 h-64">
                 {/* Central node */}
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-slate-600 rounded-full flex items-center justify-center text-white font-bold">
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-16 bg-slate-600 rounded-full flex items-center justify-center text-white font-bold text-xs z-20 shadow-lg">
                   FRAUD
                 </div>
                 
                 {/* Surrounding nodes */}
-                <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-2 w-12 h-12 bg-slate-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                <div className="absolute top-4 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-slate-500 rounded-full flex items-center justify-center text-white text-xs font-bold z-10 shadow-md">
                   MULE
                 </div>
                 
-                <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-2 w-12 h-12 bg-slate-500 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-12 h-12 bg-slate-500 rounded-full flex items-center justify-center text-white text-xs font-bold z-10 shadow-md">
                   MULE
                 </div>
                 
-                <div className="absolute top-1/2 left-0 transform -translate-y-1/2 -translate-x-2 w-12 h-12 bg-slate-400 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                <div className="absolute top-1/2 left-4 transform -translate-y-1/2 w-12 h-12 bg-slate-400 rounded-full flex items-center justify-center text-white text-xs font-bold z-10 shadow-md">
                   SAFE
                 </div>
                 
-                <div className="absolute top-1/2 right-0 transform -translate-y-1/2 translate-x-2 w-12 h-12 bg-slate-400 rounded-full flex items-center justify-center text-white text-xs font-bold">
+                <div className="absolute top-1/2 right-4 transform -translate-y-1/2 w-12 h-12 bg-slate-400 rounded-full flex items-center justify-center text-white text-xs font-bold z-10 shadow-md">
                   SAFE
                 </div>
                 
                 {/* Connection lines */}
-                <svg className="absolute inset-0 w-full h-full pointer-events-none">
-                  <line x1="50%" y1="50%" x2="50%" y2="20%" stroke="#64748b" strokeWidth="2" />
-                  <line x1="50%" y1="50%" x2="50%" y2="80%" stroke="#64748b" strokeWidth="2" />
-                  <line x1="50%" y1="50%" x2="20%" y2="50%" stroke="#94a3b8" strokeWidth="2" />
-                  <line x1="50%" y1="50%" x2="80%" y2="50%" stroke="#94a3b8" strokeWidth="2" />
+                <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 256 256">
+                  {/* Center to top */}
+                  <line x1="128" y1="128" x2="128" y2="64" stroke="#64748b" strokeWidth="2" opacity="0.6" />
+                  {/* Center to bottom */}
+                  <line x1="128" y1="128" x2="128" y2="192" stroke="#64748b" strokeWidth="2" opacity="0.6" />
+                  {/* Center to left */}
+                  <line x1="128" y1="128" x2="64" y2="128" stroke="#94a3b8" strokeWidth="2" opacity="0.6" />
+                  {/* Center to right */}
+                  <line x1="128" y1="128" x2="192" y2="128" stroke="#94a3b8" strokeWidth="2" opacity="0.6" />
                 </svg>
               </div>
             </div>

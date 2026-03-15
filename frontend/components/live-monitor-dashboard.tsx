@@ -107,17 +107,13 @@ export function LiveMonitorDashboard({
     };
   }, [enableStreaming, polling]);
 
-  const prioritizedAlerts = [
-    ...payload.alerts.filter((alert) => alert.type === "transaction"),
-    ...payload.alerts.filter((alert) => alert.type === "ring"),
-  ].slice(0, 3);
-
   const filteredAlerts = payload.alerts.filter((alert) => {
     const matchesThreshold = alert.final_risk * 100 >= minimumRisk;
     const matchesAction = actionFilter === "all" || alert.action === actionFilter;
 
     return matchesThreshold && matchesAction;
   });
+  const topAlerts = filteredAlerts.slice(0, 5);
 
   const filteredTransactions = payload.transactions.filter((transaction) => {
     const matchesThreshold = transaction.final_risk * 100 >= minimumRisk;
@@ -157,13 +153,13 @@ export function LiveMonitorDashboard({
               >
                 {polling ? "Pause live stream" : "Resume live stream"}
               </button>
-              <span className="rounded-full border border-line bg-paper px-3 py-2 text-xs uppercase tracking-[0.18em] text-muted">
-                {isInjectingScenario
-                  ? "Injecting..."
-                  : lastScenario
-                    ? `Last: ${lastScenario.replace(/_/g, " ")}`
-                    : "Ready"}
-              </span>
+              {(isInjectingScenario || lastScenario) && (
+                <span className="rounded-full border border-line bg-paper px-3 py-2 text-xs uppercase tracking-[0.18em] text-muted">
+                  {isInjectingScenario
+                    ? "Injecting..."
+                    : `Last: ${lastScenario.replace(/_/g, " ")}`}
+                </span>
+              )}
             </div>
           ) : (
             <span className="rounded-full border border-line bg-paper px-4 py-2 text-xs uppercase tracking-[0.18em] text-muted">
@@ -372,11 +368,11 @@ export function LiveMonitorDashboard({
         />
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-3 lg:grid-cols-2">
+      <section>
         <SectionCard title="Priority alerts" eyebrow={`Hot origin ${payload.stats.hot_country}`}>
           <div className="space-y-4">
-            {filteredAlerts.length ? (
-              filteredAlerts.map((alert, index) => (
+            {topAlerts.length ? (
+              topAlerts.map((alert, index) => (
                 <article
                   key={`${alert.type}-${alert.transaction_id ?? alert.cluster_id ?? index}`}
                   className="rounded-[24px] border border-line/70 bg-paper/70 p-5"
@@ -463,7 +459,9 @@ export function LiveMonitorDashboard({
             )}
           </div>
         </SectionCard>
+      </section>
 
+      <section>
         <SectionCard
           title="Entity graph"
           eyebrow="Accounts, devices, IPs, and beneficiaries"
@@ -475,8 +473,8 @@ export function LiveMonitorDashboard({
       <section className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
         <SectionCard title="Why the top alerts were flagged" eyebrow="Risk breakdown">
           <div className="space-y-4">
-            {prioritizedAlerts.length ? (
-              prioritizedAlerts.map((alert) => (
+            {topAlerts.length ? (
+              topAlerts.map((alert) => (
                 <article
                   key={`explain-${alert.transaction_id ?? alert.cluster_id ?? alert.alert_title}`}
                   className="rounded-[22px] border border-line/70 bg-paper/70 p-5"
