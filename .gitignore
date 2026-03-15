@@ -13,13 +13,13 @@ yarn-error.log*
 __pycache__/
 *.pyc
 *.pyo
+.pytest_cache/
 
 # Environment variables
 .env
 .env.local
 
 # Data files
-data/*.csv
 *.parquet
 *.pkl
 

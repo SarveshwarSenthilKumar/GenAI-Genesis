@@ -1,103 +1,111 @@
-# Sentinel
+<a id="readme-top"></a>
 
-Sentinel is an AI-assisted fraud analyst workspace for detecting suspicious transfers, triaging high-risk alerts, and investigating connected money movement in real time.
+<p align="center">
+  <img src="frontend/app/icon.svg" alt="Sentinel logo" width="88" height="88">
+</p>
 
-It combines:
+<h1 align="center">Sentinel</h1>
 
-- a live fraud monitor with scenario injection
-- an analyst incident queue for triage
-- interactive network exposure graphs
-- explainable decision logic
-- business-impact metrics for demo storytelling
-- CSV upload analysis for ad hoc datasets
+<p align="center">
+  AI-native fraud defense for modern analyst teams, combining anomaly scoring, behavioral identity,
+  and network intelligence in one unified workspace.
+</p>
 
-The goal is simple: help analysts understand not just that something is risky, but why it was flagged, what pushed it from review to block, and what value was protected.
+<p align="center">
+  <a href="#product-preview"><strong>Product Preview</strong></a>
+  ·
+  <a href="#getting-started"><strong>Getting Started</strong></a>
+  ·
+  <a href="COMPREHENSIVE_DOCUMENTATION.md"><strong>Technical Documentation</strong></a>
+  ·
+  <a href="https://github.com/SarveshwarSenthilKumar/GenAI-Genesis/issues"><strong>Issues</strong></a>
+</p>
+
+<p align="center">
+  <img alt="Next.js 15" src="https://img.shields.io/badge/Next.js-15-0B1220?style=for-the-badge&logo=next.js&logoColor=white">
+  <img alt="React 19" src="https://img.shields.io/badge/React-19-0F172A?style=for-the-badge&logo=react&logoColor=61DAFB">
+  <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-Python-0B1220?style=for-the-badge&logo=fastapi&logoColor=00C7B7">
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-5-0B1220?style=for-the-badge&logo=typescript&logoColor=3178C6">
+  <img alt="OpenAI compatible" src="https://img.shields.io/badge/OpenAI-compatible-0B1220?style=for-the-badge&logo=openai&logoColor=white">
+</p>
+
+## Product Preview
+
+![Sentinel network replay](docs/images/sentinel-network-replay.png)
+
+<p align="center">
+  <em>Current preview: a full-screen network replay view for tracing suspicious money movement and exposed mule paths.</em>
+</p>
+
+## About Sentinel
+
+Sentinel is an AI-assisted fraud analyst workspace for detecting suspicious transfers, triaging
+high-risk alerts, and investigating connected money movement in real time. It is built to show not
+just that a transaction is risky, but why it was flagged, what pushed it from review to hold or
+block, and how network exposure changes the investigation.
+
+The product combines a synthetic live stream for demos, a score-first incident queue, explainable
+decision logic, graph-based investigation, business-impact framing, and CSV upload analysis for ad
+hoc datasets. The result is a more presentation-ready fraud console that still reads like a real
+professional tool.
 
 ## Why Sentinel
 
-Traditional fraud tools are often strong at scoring individual transactions but weak at showing:
+- Traditional fraud tooling often scores isolated transactions well, but makes it harder to see how signals interact across behavior, device, and network context.
+- Analysts need a single workspace for triage, explanation, and investigation instead of switching across separate dashboards and graph tools.
+- Demo environments need reliable, repeatable fraud scenarios that still feel realistic enough to tell a strong product story.
+- Sentinel addresses those gaps with anomaly scoring, deterministic rules, and network analysis inside one unified analyst workspace.
 
-- how fraud signals interact
-- where network exposure changes the decision
-- what a human analyst should do next
-- what business value the detection system created
+## Core Workflow
 
-Sentinel addresses that by combining anomaly scoring, deterministic rule scoring, and network analysis in one analyst-focused product.
-
-## What The App Includes
-
-- `Incident dashboard` for triage, queue filtering, scenario injection, and investigation
-- `Live monitor` for streaming synthetic transactions and real-time fraud alerts
-- `Decision logic` that explains top driver, tipping point, and counterfactual outcomes
-- `Business impact` metrics such as suspicious dollars prevented and analyst time saved
-- `Network exposure graphs` for graph-based investigation and replay
-- `Case review flows` for deterministic fraud demo cases
-- `Upload flow` that turns a CSV into a live-style fraud report
-- `Documentation page` that explains the product and scoring logic in-app
-
-## Core Demo Story
-
-Sentinel is strongest when shown as a full analyst workflow:
-
-1. Inject a fraud scenario in the live monitor.
-2. Watch the alert enter the queue with scoring and explanation.
-3. Open the decision logic and show what pushed the alert into `hold` or `block`.
-4. Use the graph view to explain the network exposure.
-5. Show business-impact metrics to answer the “so what?” question.
+1. Detect anomalous transfers and suspicious clusters in a live synthetic stream.
+2. Prioritize incidents in a queue built for triage, filtering, and scenario injection.
+3. Open the triage dock to review the combined transaction, behavior, and network score breakdown.
+4. Move into investigation views to trace money flow, exposed entities, and suspicious graph patterns.
+5. Support the narrative with business-impact metrics, upload-based analysis, and optional AI explanations.
 
 ## Tech Stack
 
 ### Frontend
 
-- `Next.js 15`
-- `React 19`
-- `TypeScript`
-- `Tailwind CSS`
-- `Cytoscape.js`
-- `Recharts`
-- `React Three Fiber`
+- Next.js 15
+- React 19
+- TypeScript
+- Tailwind CSS
+- Cytoscape.js
+- Recharts
+- React Three Fiber
 
 ### Backend
 
-- `FastAPI`
-- `Python`
-- `pandas`
-- `scikit-learn`
-- `networkx`
-- `python-dotenv`
+- FastAPI
+- Python
+- pandas
+- networkx
+- python-dotenv
+- python-multipart
 
-### AI
+### AI and Explanation Layer
 
-- OpenAI-compatible chat/explanation integration
-- deterministic fallback flows when no model is configured
+- OpenAI-compatible chat and explanation flows
+- Deterministic fallback behavior when no live model is configured
+- Incident and transaction chat surfaces grounded in current case data
 
-## Repository Layout
+## Getting Started
 
-```text
-GenAI-Genesis/
-├── backend/
-├── frontend/
-├── data/
-├── PROJECT_INFO.md
-└── README.md
+### Prerequisites
+
+- Python 3
+- Node.js and npm
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/SarveshwarSenthilKumar/GenAI-Genesis.git
+cd GenAI-Genesis
 ```
 
-## Important Routes
-
-- `/` landing page
-- `/dashboard` incident queue and triage workspace
-- `/live` real-time fraud monitoring
-- `/incidents/[id]` incident detail
-- `/incidents/[id]/graph` incident network graph
-- `/cases/[id]` case review
-- `/cases/[id]/graph` case network graph
-- `/upload` CSV upload and instant report generation
-- `/documentation` in-app documentation
-- `/3d-network` experimental graph visualization
-
-## Local Setup
-
-### Backend
+### 2. Start the backend
 
 ```bash
 cd backend
@@ -107,19 +115,9 @@ pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-If you use Fish:
+The backend runs at `http://127.0.0.1:8000`.
 
-```fish
-cd backend
-python3 -m venv .venv
-source .venv/bin/activate.fish
-pip install -r requirements.txt
-uvicorn app.main:app --reload
-```
-
-Backend runs at `http://127.0.0.1:8000`.
-
-### Frontend
+### 3. Start the frontend
 
 ```bash
 cd frontend
@@ -127,65 +125,87 @@ npm install
 npm run dev
 ```
 
-Frontend runs at `http://127.0.0.1:3000`.
+The frontend runs at `http://127.0.0.1:3000`.
 
-Useful frontend scripts:
+### 4. Configure environment variables
 
-- `npm run dev` starts the dev server
-- `npm run dev:fresh` clears `.next` and starts fresh
-- `npm run reset` clears `.next`
-- `npm run build` runs a production build
-- `npm run start` serves the production build
+The backend reads from either the repo root `.env` file or `backend/.env`.
 
-## Environment Variables
-
-The backend reads from either the repo root `.env` or `backend/.env`.
-
-### Backend
+Backend example:
 
 ```env
-FRONTEND_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+FRONTEND_ORIGINS=http://localhost:3000,http://127.0.0.1:3000,http://localhost:3001,http://127.0.0.1:3001
 OPENAI_API_KEY=
 OPENAI_MODEL=gpt-4o-mini
-OPENAI_BASE_URL=
 OPENAI_TIMEOUT_SECONDS=8
+OPENAI_BASE_URL=https://qyt7893blb71b5d3.us-east-2.aws.endpoints.huggingface.cloud/v1
 ```
 
-### Frontend
-
-Set this in `frontend/.env.local` if needed:
+Frontend example:
 
 ```env
 NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
 ```
 
-If unset, the frontend defaults to `http://127.0.0.1:8000`.
+If `NEXT_PUBLIC_API_BASE_URL` is unset, the frontend defaults to `http://127.0.0.1:8000`.
 
-## API Endpoints
+### Useful frontend scripts
 
-- `GET /api/health`
+- `npm run dev` starts the development server
+- `npm run dev:fresh` clears `.next` and starts fresh
+- `npm run reset` clears `.next`
+- `npm run build` creates a production build
+- `npm run start` serves the production build
+
+## Key Routes
+
+| Route | Purpose |
+| --- | --- |
+| `/` | Product landing page and analyst-console entry point |
+| `/dashboard` | Incident queue, triage, filtering, and scenario injection |
+| `/live` | Real-time fraud monitoring and business-impact snapshot |
+| `/upload` | CSV upload flow for live-style fraud analysis |
+| `/incidents/[id]` | Detailed incident investigation view |
+| `/incidents/[id]/graph` | Network exposure view for a selected incident |
+| `/cases/[id]` | Deterministic case-review flow |
+| `/documentation` | In-app product and scoring documentation |
+| `/3d-network` | Experimental 3D network visualization surface |
+
+## Detection Architecture
+
+Sentinel is strongest when it is shown as a complete investigation loop rather than a single score.
+The backend layers several systems together:
+
+- `Transaction scoring`: flags unusual payment amounts, velocity, and transfer behavior.
+- `Behavior scoring`: captures session drift, device changes, and baseline deviations.
+- `Network scoring`: detects exposure to suspicious clusters, rapid chains, fan-in/fan-out, and cash-out paths.
+- `Decision transparency`: exposes the top driver, tipping point, counterfactual context, and analyst-friendly explanation.
+- `AI assistance`: enhances incident and transaction review, while deterministic flows keep the core demo reliable without a live model.
+
+Selected API surfaces that power the workspace:
+
 - `GET /api/incidents/queue`
-- `GET /api/incidents/refresh`
 - `GET /api/incidents/{incident_id}/panel`
-- `GET /api/incidents/{incident_id}`
 - `GET /api/incidents/{incident_id}/graph`
 - `GET /api/live/bootstrap`
 - `GET /api/live/stream`
 - `GET /api/live/scenario`
 - `POST /api/uploads/transactions/live`
+- `POST /api/uploads/transactions/dashboard`
 
-## Differentiators
+## Roadmap
 
-What makes Sentinel stand out:
+- Expand the scenario library for more repeatable fraud-story demos.
+- Continue refining the triage and investigation experience around explanation quality and analyst actions.
+- Deepen upload-based reporting so ad hoc datasets feel as polished as the live monitor.
+- Keep iterating on graph exploration, including the experimental 3D network surface.
 
-- `Multi-layer scoring`: anomaly + rules + network
-- `Decision transparency`: top driver, tipping point, and counterfactuals
-- `Investigation UX`: queue, graph, replay, and detail views in one workflow
-- `Business framing`: protected dollars, isolated accounts, analyst time saved
-- `Demo reliability`: reproducible fraud scenarios on demand
+## License and Support
 
-## Notes
+- Repository: [SarveshwarSenthilKumar/GenAI-Genesis](https://github.com/SarveshwarSenthilKumar/GenAI-Genesis)
+- Project summary: [PROJECT_INFO.md](PROJECT_INFO.md)
+- Technical deep dive: [COMPREHENSIVE_DOCUMENTATION.md](COMPREHENSIVE_DOCUMENTATION.md)
+- Issues and enhancements: [GitHub Issues](https://github.com/SarveshwarSenthilKumar/GenAI-Genesis/issues)
+- License status: no license file is currently included in this repository.
 
-- Sentinel works without a live LLM for core scoring and demo flows.
-- AI explanations enhance the experience but are not required for the main product.
-- The 3D network page is experimental and should be treated as an optional demo surface.
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
