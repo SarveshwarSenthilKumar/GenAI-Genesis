@@ -27,9 +27,9 @@ Tools:
 - npm
 
 # Product Summary
-Sentinel is a demo-first fraud analyst console that unifies case review and live monitoring to help analysts quickly understand why a transfer was flagged. Aside from the sophisticated approach of an ensemble detection algorithm, the experience centers on a dashboard of prioritized cases, drill‑down views that surface behavior drift and anomaly signals, and an interactive network graph for tracing suspicious recipient paths. A live monitor streams synthetic transactions, applies rule scoring and anomaly scoring, and highlights ring‑like activity in real time, giving analysts a continuous sense of risk.
+Sentinel is a demo-first fraud analyst console that unifies case review and live monitoring to help analysts quickly understand why a transfer was flagged. Aside from the sophisticated approach of an ensemble detection algorithm, the experience centers on a dashboard of prioritized cases, drill‑down views that surface behavior drift and anomaly signals, and an interactive network graph for tracing suspicious recipient paths. A live monitor streams synthetic transactions, applies rule scoring and anomaly scoring, and highlights ring‑like activity in real time, giving analysts a continuous sense of risk. An LLM assistant is also availble for further explanation for a specific case, building user's trust in our product with explanability and transparency.
 
-# Additional Note:
+# Additional Note
 A more detailed documentation for Sentinel is included at the top-right corner of the analyst console.
 
 # AI Use > 70% ?
