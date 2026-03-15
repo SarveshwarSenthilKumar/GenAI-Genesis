@@ -25,6 +25,9 @@ export default async function IncidentGraphPage({
     );
   }
 
+  const highlightedNodeIds = [...new Set(graph.highlighted_node_ids)];
+  const suspiciousNodeIds = [...new Set(graph.suspicious_cluster_ids)];
+
   return (
     <main className="space-y-8">
       <SectionCard
@@ -86,8 +89,8 @@ export default async function IncidentGraphPage({
                     Highlighted
                   </p>
                   <ul className="mt-3 space-y-2 text-sm text-muted">
-                    {graph.highlighted_node_ids.length ? (
-                      graph.highlighted_node_ids.map((nodeId, index) => (
+                    {highlightedNodeIds.length ? (
+                      highlightedNodeIds.map((nodeId, index) => (
                         <li key={`${nodeId}-${index}`}>- {nodeId}</li>
                       ))
                     ) : (
@@ -100,12 +103,12 @@ export default async function IncidentGraphPage({
                     Suspicious
                   </p>
                   <ul className="mt-3 space-y-2 text-sm text-muted">
-                    {graph.suspicious_cluster_ids.length ? (
-                      graph.suspicious_cluster_ids.map((nodeId, index) => (
+                    {suspiciousNodeIds.length ? (
+                      suspiciousNodeIds.map((nodeId, index) => (
                         <li key={`${nodeId}-${index}`}>- {nodeId}</li>
                       ))
                     ) : (
-                      <li>- None in current snapshot slice</li>
+                      <li>- None in current graph</li>
                     )}
                   </ul>
                 </div>

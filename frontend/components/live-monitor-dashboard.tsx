@@ -169,7 +169,11 @@ export function LiveMonitorDashboard({
               <button
                 type="button"
                 onClick={() => setPolling((current) => !current)}
-                className="rounded-full border border-line bg-paper px-4 py-2 text-sm text-ink transition hover:bg-[#efe4d1]"
+                className={`rounded-full border px-4 py-2 text-sm transition ${
+                  polling
+                    ? "border-white/80 bg-white text-slate-950 hover:bg-white"
+                    : "border-line bg-paper text-ink hover:bg-paper"
+                }`}
               >
                 {polling ? "Pause live stream" : "Resume live stream"}
               </button>
@@ -264,6 +268,31 @@ export function LiveMonitorDashboard({
               />
             </div>
           </div>
+        </div>
+      </SectionCard>
+
+      <SectionCard title="Business impact" eyebrow="Why this snapshot matters">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <ImpactCard
+            label="Suspicious dollars prevented"
+            value={currency.format(payload.stats.suspicious_dollars_prevented)}
+            detail="Estimated value stopped by current hold/block actions"
+          />
+          <ImpactCard
+            label="High-risk accounts isolated"
+            value={payload.stats.high_risk_accounts_isolated.toString()}
+            detail="Accounts linked to the highest-risk alerts in this window"
+          />
+          <ImpactCard
+            label="Analyst hours saved"
+            value={`${payload.stats.analyst_hours_saved.toFixed(1)}h`}
+            detail="Estimated triage time avoided through prioritization"
+          />
+          <ImpactCard
+            label="False-positive reduction estimate"
+            value={`${Math.round(payload.stats.false_positive_reduction_estimate * 100)}%`}
+            detail="Improvement from combining anomaly, rules, and network evidence"
+          />
         </div>
       </SectionCard>
 
@@ -437,6 +466,36 @@ export function LiveMonitorDashboard({
                         <SignalBar label="Rules" value={alert.rule_score} tone="review" />
                         <SignalBar label="Network" value={alert.network_risk_score} tone="block" />
                       </div>
+
+                      {alert.why_flagged.top_driver ||
+                      alert.why_flagged.tipping_point ||
+                      alert.why_flagged.counterfactuals.length ? (
+                        <div className="mt-4 rounded-[18px] border border-line/70 bg-panel/70 p-4">
+                          <p className="text-xs uppercase tracking-[0.18em] text-muted">
+                            Decision logic
+                          </p>
+                          <div className="mt-3 space-y-2 text-sm leading-6 text-muted">
+                            {alert.why_flagged.top_driver ? (
+                              <p>
+                                <span className="font-medium text-ink">Top driver:</span>{" "}
+                                {alert.why_flagged.top_driver}
+                              </p>
+                            ) : null}
+                            {alert.why_flagged.tipping_point ? (
+                              <p>
+                                <span className="font-medium text-ink">Tipping point:</span>{" "}
+                                {alert.why_flagged.tipping_point}
+                              </p>
+                            ) : null}
+                            {alert.why_flagged.counterfactuals.map((item) => (
+                              <p key={`${alert.alert_title}-${item}`}>
+                                <span className="font-medium text-ink">Counterfactual:</span>{" "}
+                                {item}
+                              </p>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
                     </div>
 
                     <div className="rounded-[20px] border border-line/70 bg-panel/80 p-4">
@@ -522,6 +581,29 @@ export function LiveMonitorDashboard({
                       />
                     ))}
                   </div>
+                  {alert.why_flagged.top_driver ||
+                  alert.why_flagged.tipping_point ||
+                  alert.why_flagged.counterfactuals.length ? (
+                    <div className="mt-4 rounded-[18px] border border-line/70 bg-panel/70 p-4 text-sm leading-6 text-muted">
+                      {alert.why_flagged.top_driver ? (
+                        <p>
+                          <span className="font-medium text-ink">Top driver:</span>{" "}
+                          {alert.why_flagged.top_driver}
+                        </p>
+                      ) : null}
+                      {alert.why_flagged.tipping_point ? (
+                        <p className={alert.why_flagged.top_driver ? "mt-2" : ""}>
+                          <span className="font-medium text-ink">Tipping point:</span>{" "}
+                          {alert.why_flagged.tipping_point}
+                        </p>
+                      ) : null}
+                      {alert.why_flagged.counterfactuals.map((item) => (
+                        <p key={`${alert.alert_title}-counterfactual-${item}`} className="mt-2">
+                          <span className="font-medium text-ink">Counterfactual:</span> {item}
+                        </p>
+                      ))}
+                    </div>
+                  ) : null}
                 </article>
               ))
             ) : (
@@ -642,6 +724,24 @@ function MiniMetric({
     <div className="rounded-[20px] border border-line/70 bg-panel/90 p-4">
       <p className="text-xs uppercase tracking-[0.18em] text-muted">{label}</p>
       <p className={`mt-3 font-serif text-3xl ${toneMap[tone]}`}>{value}</p>
+    </div>
+  );
+}
+
+function ImpactCard({
+  label,
+  value,
+  detail,
+}: {
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <div className="rounded-[22px] border border-line/70 bg-panel/85 p-5">
+      <p className="text-xs uppercase tracking-[0.18em] text-muted">{label}</p>
+      <p className="mt-3 font-serif text-4xl text-ink">{value}</p>
+      <p className="mt-3 text-sm leading-6 text-muted">{detail}</p>
     </div>
   );
 }

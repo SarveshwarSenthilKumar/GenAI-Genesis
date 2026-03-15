@@ -134,16 +134,16 @@ class IncidentService:
         if alert.receiver_account:
             focus_accounts.add(alert.receiver_account)
 
-        relevant = [
-            tx
-            for tx in snapshot.enriched
-            if tx["sender_account"] in focus_accounts
-            or tx["receiver_account"] in focus_accounts
-        ][-14:]
+        relevant = self._incident_graph_transactions(graph_transactions, focus_accounts)
 
         nodes: dict[str, dict[str, Any]] = {}
         edges_by_id: dict[str, dict[str, Any]] = {}
-        highlighted_nodes = set(focus_accounts)
+        visible_node_ids = {
+            node_id
+            for tx in relevant
+            for node_id in (tx["sender_account"], tx["receiver_account"])
+        }
+        highlighted_nodes = visible_node_ids & focus_accounts
         highlighted_edges: list[str] = []
 
         for tx in relevant:
@@ -183,19 +183,18 @@ class IncidentService:
                 "classes": classes,
             }
 
-        recipient_fan_in = sum(1 for tx in relevant if tx["receiver_account"] == alert.receiver_account)
-        recipient_fan_out = sum(1 for tx in relevant if tx["sender_account"] == alert.receiver_account)
+        recipient_fan_in = sum(
+            1 for tx in relevant if tx["receiver_account"] == alert.receiver_account
+        )
+        recipient_fan_out = sum(
+            1 for tx in relevant if tx["sender_account"] == alert.receiver_account
+        )
         edges = list(edges_by_id.values())
         suspicious_nodes = sorted(
-            node_id
-            for tx in graph_transactions
-            for node_id in (tx["sender_account"], tx["receiver_account"])
-            if node_id.startswith("MULE") or node_id.startswith("CASH")
+            node_id for node_id in visible_node_ids if self._is_suspicious_node(node_id)
         )
         metrics = self._incident_graph_metrics(
             relevant=relevant,
-            graph_transactions=graph_transactions,
-            recipient_account=alert.receiver_account,
             highlighted_nodes=highlighted_nodes,
             suspicious_nodes=suspicious_nodes,
         )
@@ -497,16 +496,96 @@ class IncidentService:
             return "branch"
         return ""
 
+    def _is_suspicious_node(self, node_id: str) -> bool:
+        return node_id.startswith("MULE") or node_id.startswith("CASH")
+
+    def _incident_graph_transactions(
+        self, graph_transactions: list[dict[str, Any]], focus_accounts: set[str]
+    ) -> list[dict[str, Any]]:
+        latest_directed_edges: dict[tuple[str, str], dict[str, Any]] = {}
+        latest_undirected_edges: dict[tuple[str, str], dict[str, Any]] = {}
+        neighborhood_graph = nx.Graph()
+        suspicious_nodes: set[str] = set()
+
+        for tx in graph_transactions:
+            sender = tx["sender_account"]
+            receiver = tx["receiver_account"]
+            directed_key = (sender, receiver)
+            undirected_key = tuple(sorted((sender, receiver)))
+
+            if directed_key not in latest_directed_edges or tx["timestamp"] >= latest_directed_edges[directed_key]["timestamp"]:
+                latest_directed_edges[directed_key] = tx
+            if undirected_key not in latest_undirected_edges or tx["timestamp"] >= latest_undirected_edges[undirected_key]["timestamp"]:
+                latest_undirected_edges[undirected_key] = tx
+
+            neighborhood_graph.add_edge(sender, receiver)
+            if self._is_suspicious_node(sender):
+                suspicious_nodes.add(sender)
+            if self._is_suspicious_node(receiver):
+                suspicious_nodes.add(receiver)
+
+        focus_context = sorted(
+            (
+                tx
+                for tx in latest_directed_edges.values()
+                if tx["sender_account"] in focus_accounts
+                or tx["receiver_account"] in focus_accounts
+            ),
+            key=lambda item: item["timestamp"],
+            reverse=True,
+        )[:14]
+
+        path_accounts = self._nearest_suspicious_path(
+            graph=neighborhood_graph,
+            source_accounts=focus_accounts,
+            suspicious_nodes=suspicious_nodes,
+        )
+        path_transactions: list[dict[str, Any]] = []
+        for left, right in zip(path_accounts, path_accounts[1:]):
+            tx = latest_directed_edges.get((left, right))
+            if tx is None:
+                tx = latest_directed_edges.get((right, left))
+            if tx is None:
+                tx = latest_undirected_edges.get(tuple(sorted((left, right))))
+            if tx is not None:
+                path_transactions.append(tx)
+
+        selected_transactions: dict[str, dict[str, Any]] = {}
+        for tx in focus_context + path_transactions:
+            selected_transactions[tx["transaction_id"]] = tx
+
+        return sorted(selected_transactions.values(), key=lambda item: item["timestamp"])
+
+    def _nearest_suspicious_path(
+        self,
+        graph: nx.Graph,
+        source_accounts: set[str],
+        suspicious_nodes: set[str],
+    ) -> list[str]:
+        best_path: list[str] = []
+
+        for source in sorted(source_accounts):
+            if source not in graph:
+                continue
+            for suspicious in sorted(suspicious_nodes):
+                if suspicious not in graph:
+                    continue
+                try:
+                    candidate = nx.shortest_path(graph, source=source, target=suspicious)
+                except nx.NetworkXNoPath:
+                    continue
+                if not best_path or len(candidate) < len(best_path):
+                    best_path = candidate
+
+        return best_path
+
     def _incident_graph_metrics(
         self,
         relevant: list[dict[str, Any]],
-        graph_transactions: list[dict[str, Any]],
-        recipient_account: str | None,
         highlighted_nodes: set[str],
         suspicious_nodes: list[str],
     ) -> GraphSignals:
         account_graph = nx.DiGraph()
-        distance_graph = nx.DiGraph()
         timestamps_by_edge: list[tuple[str, str, datetime]] = []
 
         for tx in relevant:
@@ -519,18 +598,11 @@ class IncidentService:
                 continue
             timestamps_by_edge.append((sender, receiver, parsed))
 
-        for tx in graph_transactions:
-            distance_graph.add_edge(tx["sender_account"], tx["receiver_account"])
-
         distance: int | None = None
-        distance_sources = sorted(
-            node_id for node_id in highlighted_nodes if node_id in distance_graph
-        )
-        if recipient_account and recipient_account in distance_graph:
-            distance_sources = sorted({*distance_sources, recipient_account})
+        distance_sources = sorted(node_id for node_id in highlighted_nodes if node_id in account_graph)
 
         if distance_sources and suspicious_nodes:
-            undirected = distance_graph.to_undirected()
+            undirected = account_graph.to_undirected()
             candidate_distances: list[int] = []
             for source in distance_sources:
                 for suspicious in suspicious_nodes:

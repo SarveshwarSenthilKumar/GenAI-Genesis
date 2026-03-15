@@ -135,6 +135,10 @@ class LiveMonitorStats(BaseModel):
     transactions_monitored: int
     flagged_alerts: int
     suspicious_volume: float
+    suspicious_dollars_prevented: float
+    high_risk_accounts_isolated: int
+    analyst_hours_saved: float
+    false_positive_reduction_estimate: float
     ring_clusters: int
     rules_triggered: int
     hot_country: str
@@ -162,6 +166,9 @@ class LiveMonitorWhyFlagged(BaseModel):
     breakdown: list[LiveMonitorBreakdownItem] = Field(default_factory=list)
     top_rule_reasons: list[str] = Field(default_factory=list)
     top_network_evidence: list[str] = Field(default_factory=list)
+    top_driver: str | None = None
+    tipping_point: str | None = None
+    counterfactuals: list[str] = Field(default_factory=list)
 
 
 class LiveMonitorAlert(BaseModel):

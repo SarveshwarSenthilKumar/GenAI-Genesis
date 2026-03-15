@@ -206,6 +206,10 @@ export type LiveMonitorStats = {
   transactions_monitored: number;
   flagged_alerts: number;
   suspicious_volume: number;
+  suspicious_dollars_prevented: number;
+  high_risk_accounts_isolated: number;
+  analyst_hours_saved: number;
+  false_positive_reduction_estimate: number;
   ring_clusters: number;
   rules_triggered: number;
   hot_country: string;
@@ -233,6 +237,9 @@ export type LiveMonitorWhyFlagged = {
   breakdown: LiveMonitorBreakdownItem[];
   top_rule_reasons: string[];
   top_network_evidence: string[];
+  top_driver: string | null;
+  tipping_point: string | null;
+  counterfactuals: string[];
 };
 
 export type LiveMonitorAlert = {

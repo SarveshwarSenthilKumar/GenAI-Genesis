@@ -654,6 +654,69 @@ function RiskScoringSection() {
           </div>
         </div>
 
+        <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700 mb-8">
+          <h3 className="text-xl font-bold mb-4 text-slate-900 dark:text-slate-100">
+            Decision Logic
+          </h3>
+          <p className="text-sm leading-7 text-slate-700 dark:text-slate-300">
+            Sentinel now explains more than the final score. The live monitor highlights which
+            signal family contributed the most, which signal changed the action the most, and what
+            the outcome would have been if a key signal family were removed.
+          </p>
+
+          <div className="mt-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+              <h4 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">
+                Top driver
+              </h4>
+              <p className="text-sm text-slate-700 dark:text-slate-300">
+                Identifies the strongest signal family for the alert, such as anomaly, rules, or
+                network risk.
+              </p>
+            </div>
+
+            <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+              <h4 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">
+                Tipping point
+              </h4>
+              <p className="text-sm text-slate-700 dark:text-slate-300">
+                Shows what moved the decision from one action band to another, such as from review
+                to hold or from hold to block.
+              </p>
+            </div>
+
+            <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+              <h4 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">
+                Counterfactuals
+              </h4>
+              <p className="text-sm text-slate-700 dark:text-slate-300">
+                Explains what would have happened without a signal family, for example:
+                &quot;Without network evidence, this would be review.&quot;
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5 bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+            <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+              Example
+            </p>
+            <div className="mt-3 space-y-2 text-sm text-slate-700 dark:text-slate-300">
+              <p>
+                <span className="font-semibold text-slate-900 dark:text-slate-100">Top driver:</span>{" "}
+                Network
+              </p>
+              <p>
+                <span className="font-semibold text-slate-900 dark:text-slate-100">Tipping point:</span>{" "}
+                Network evidence moved this alert from review to block.
+              </p>
+              <p>
+                <span className="font-semibold text-slate-900 dark:text-slate-100">Counterfactual:</span>{" "}
+                Without network evidence, this would be review.
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
             <h3 className="font-bold text-slate-900 dark:text-slate-100">Allow</h3>
@@ -781,6 +844,5 @@ function VisualizationSection() {
     </div>
   );
 }
-
 
 
