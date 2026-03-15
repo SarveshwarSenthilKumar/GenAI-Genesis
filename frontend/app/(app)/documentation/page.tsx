@@ -19,10 +19,10 @@ export default function DocumentationPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-900 text-slate-900 dark:text-slate-100">
+    <div className="relative left-1/2 right-1/2 min-h-screen w-screen -translate-x-1/2 bg-slate-100 px-4 text-slate-900 dark:bg-slate-900 dark:text-slate-100 sm:px-6 lg:px-8">
       {/* Header */}
       <header className="sticky top-0 z-50 border-b border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-900 backdrop-blur-lg">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="h-8 w-8 border-2 border-slate-300 dark:border-slate-600 rounded-lg flex items-center justify-center">
@@ -37,8 +37,8 @@ export default function DocumentationPage() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+      <div className="py-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-4">
           {/* Sidebar Navigation */}
           <nav className="lg:col-span-1">
             <div className="sticky top-24 space-y-1">
@@ -717,6 +717,70 @@ function RiskScoringSection() {
           </div>
         </div>
 
+        <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700 mb-8">
+          <h3 className="text-xl font-bold mb-4 text-slate-900 dark:text-slate-100">
+            Business Impact
+          </h3>
+          <p className="text-sm leading-7 text-slate-700 dark:text-slate-300">
+            Sentinel does more than flag risk. The live monitor translates screening results into
+            business-facing outcomes so investigators, product teams, and judges can quickly see
+            why the system matters operationally.
+          </p>
+
+          <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+              <h4 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">
+                Suspicious dollars prevented
+              </h4>
+              <p className="text-sm text-slate-700 dark:text-slate-300">
+                Estimates the value of transfers Sentinel would have intercepted through hold or
+                block recommendations in the current live window.
+              </p>
+            </div>
+
+            <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+              <h4 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">
+                High-risk accounts isolated
+              </h4>
+              <p className="text-sm text-slate-700 dark:text-slate-300">
+                Counts the accounts connected to severe incidents so analysts can understand how
+                much exposure was contained, not just how many alerts were raised.
+              </p>
+            </div>
+
+            <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+              <h4 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">
+                Analyst time saved
+              </h4>
+              <p className="text-sm text-slate-700 dark:text-slate-300">
+                Approximates how much manual triage time was reduced by prioritizing the queue and
+                surfacing the strongest drivers automatically.
+              </p>
+            </div>
+
+            <div className="bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+              <h4 className="font-semibold text-slate-900 dark:text-slate-100 mb-2">
+                False-positive reduction estimate
+              </h4>
+              <p className="text-sm text-slate-700 dark:text-slate-300">
+                Shows the expected improvement from combining anomaly, rules, and network evidence
+                instead of relying on a one-dimensional threshold alone.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5 bg-white dark:bg-slate-800 rounded-lg p-4 border border-slate-200 dark:border-slate-700">
+            <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+              Why it matters
+            </p>
+            <p className="mt-3 text-sm leading-7 text-slate-700 dark:text-slate-300">
+              These metrics help Sentinel tell a stronger story than “we found fraud.” They show
+              how much loss was potentially avoided, how much investigator effort was focused, and
+              how much noise was reduced for the team reviewing live risk.
+            </p>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="bg-slate-50 dark:bg-slate-900 rounded-xl p-6 border border-slate-200 dark:border-slate-700">
             <h3 className="font-bold text-slate-900 dark:text-slate-100">Allow</h3>
@@ -844,5 +908,3 @@ function VisualizationSection() {
     </div>
   );
 }
-
-
