@@ -1,0 +1,12 @@
+account_id,account_label,account_type,home_country,risk_tier,account_age_days,status
+ACC-9001,Compromised Retail Account,customer,US,high,714,review
+ACC-1200,Trusted Contact Account,customer,US,low,601,active
+ACC-3200,Payroll Sender,customer,CA,low,954,active
+ACC-4100,Bill Pay Receiver,customer,CA,low,887,active
+MULE-001,Layering Mule 1,mule,NG,high,24,watch
+MULE-003,Layering Mule 3,mule,NG,high,19,watch
+MULE-006,Relay Mule 6,mule,NG,high,13,watch
+MULE-007,Relay Mule 7,mule,NG,high,11,watch
+MULE-008,Collector Mule 8,mule,NG,high,9,watch
+CASH-001,Cash-out Node 1,cashout,NG,critical,7,blocked
+CASH-002,Cash-out Node 2,cashout,NG,critical,5,blocked

@@ -7,10 +7,13 @@ import { getIncidentDetail, getIncidentGraph } from "@/lib/api";
 
 export default async function IncidentGraphPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ from?: string }>;
 }) {
   const { id } = await params;
+  const { from } = await searchParams;
   let detail;
   let graph;
 
@@ -34,12 +37,22 @@ export default async function IncidentGraphPage({
         title="Network exposure"
         eyebrow={`${detail.title} · ${detail.counterpart_label}`}
         action={
-          <Link
-            href="/dashboard"
-            className="rounded-full border border-line px-4 py-2 text-sm text-ink transition hover:bg-paper"
-          >
-            Back to dashboard
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            {from === "investigation" ? (
+              <Link
+                href={`/incidents/${detail.incident_id}`}
+                className="rounded-full border border-line px-4 py-2 text-sm text-ink transition hover:bg-paper"
+              >
+                Back to investigation
+              </Link>
+            ) : null}
+            <Link
+              href="/dashboard"
+              className="rounded-full border border-line px-4 py-2 text-sm text-ink transition hover:bg-paper"
+            >
+              Back to dashboard
+            </Link>
+          </div>
         }
       >
         <div className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">

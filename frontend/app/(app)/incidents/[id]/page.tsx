@@ -143,7 +143,7 @@ export default async function IncidentDetailPage({
 
           <div className="flex flex-wrap gap-3 xl:justify-end">
             <Link
-              href={`/incidents/${detail.incident_id}/graph`}
+              href={`/incidents/${detail.incident_id}/graph?from=investigation`}
               className="rounded-full bg-ink px-5 py-3 text-sm text-paper transition hover:opacity-90"
             >
               Open network exposure

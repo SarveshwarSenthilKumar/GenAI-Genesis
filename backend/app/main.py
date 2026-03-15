@@ -176,3 +176,20 @@ async def upload_transactions_report(
         raise HTTPException(status_code=400, detail="Failed to parse transactions file.") from exc
 
     return payload
+
+
+@app.post("/api/uploads/transactions/dashboard", response_model=LiveMonitorPayload)
+async def upload_transactions_to_dashboard(
+    transactions: UploadFile = File(...),
+    accounts: UploadFile | None = File(default=None),
+):
+    if not transactions.filename:
+        raise HTTPException(status_code=400, detail="No transactions file uploaded.")
+
+    try:
+        contents = await transactions.read()
+        payload = upload_service.payload_from_bytes(contents, persist=True)
+    except Exception as exc:  # pragma: no cover - upload parsing errors
+        raise HTTPException(status_code=400, detail="Failed to parse transactions file.") from exc
+
+    return payload

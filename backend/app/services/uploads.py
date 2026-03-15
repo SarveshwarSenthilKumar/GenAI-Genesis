@@ -251,11 +251,14 @@ class UploadService:
 
         return df
 
-    def payload_from_bytes(self, contents: bytes) -> dict:
+    def payload_from_bytes(self, contents: bytes, persist: bool = False) -> dict:
         df = pd.read_csv(io.BytesIO(contents))
         df = self._normalize_dataframe(df)
         transactions = df.to_dict(orient="records")
-        snapshot = live_monitor_service.build_snapshot_from_transactions(transactions)
+        if persist:
+            snapshot = live_monitor_service.persist_snapshot_from_transactions(transactions)
+        else:
+            snapshot = live_monitor_service.build_snapshot_from_transactions(transactions)
         return snapshot.payload.model_dump()
 
 

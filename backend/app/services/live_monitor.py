@@ -84,6 +84,14 @@ class LiveMonitorService:
     ) -> LiveMonitorSnapshot:
         return self._build_snapshot_from_transactions(transactions)
 
+    def persist_snapshot_from_transactions(
+        self, transactions: list[dict]
+    ) -> LiveMonitorSnapshot:
+        self.active_scenario = None
+        snapshot = self._build_snapshot_from_transactions(transactions)
+        self._latest_snapshot = snapshot
+        return snapshot
+
     def _build_snapshot_from_transactions(
         self, transactions: list[dict], started: float | None = None
     ) -> LiveMonitorSnapshot:

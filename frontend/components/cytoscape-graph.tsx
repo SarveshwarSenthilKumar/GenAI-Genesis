@@ -38,9 +38,18 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
   const replayPanelRef = useRef<HTMLDivElement | null>(null);
   const cytoscapeRef = useRef<any>(null);
   const clampViewportRef = useRef<(() => void) | null>(null);
+  const runGraphLayoutRef = useRef<((options?: { refit?: boolean }) => void) | null>(null);
   const hoveredEdgeIdRef = useRef<string | null>(null);
   const replayTimerRef = useRef<number | null>(null);
   const replayResizeRafRef = useRef<number | null>(null);
+  const fitGraphTimeoutRef = useRef<number | null>(null);
+  const activeLayoutRef = useRef<any>(null);
+  const interactionStateRef = useRef({
+    pointerDown: false,
+    dragging: false,
+    startX: 0,
+    startY: 0,
+  });
   const isResizingReplayPanelRef = useRef(false);
   const isClampingRef = useRef(false);
   const isFullscreenRef = useRef(false);
@@ -56,6 +65,7 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
   const [activeStepIndex, setActiveStepIndex] = useState(-1);
   const [isReplayPanelOpen, setIsReplayPanelOpen] = useState(false);
   const [replayPanelWidth, setReplayPanelWidth] = useState(544);
+  const [isDraggingGraph, setIsDraggingGraph] = useState(false);
 
   const TRANSITION_MS = 320;
   const REPLAY_STEP_MS = 600;
@@ -66,22 +76,25 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
   const replayStatusLabel = replayEnabled
     ? `${Math.max(activeStepIndex + 1, 0)} of ${replaySteps.length} transfers`
     : null;
-  const layoutOptions = useMemo(
-    () => ({
+  const getLayoutOptions = (fullscreen: boolean) => ({
       name: "cose",
-      padding: 50,
-      animate: true,
-      animationDuration: 1000,
-      fit: true,
-      nodeRepulsion: 200000,
-      idealEdgeLength: 160,
-      edgeElasticity: 100,
-      nestingFactor: 0.8,
-      gravity: 0.5,
+      padding: fullscreen ? 72 : 44,
+      animate: false,
+      fit: false,
+      nodeRepulsion: fullscreen ? 340000 : 240000,
+      idealEdgeLength: fullscreen ? 138 : 124,
+      edgeElasticity: fullscreen ? 118 : 92,
+      componentSpacing: fullscreen ? 88 : 56,
+      nodeOverlap: 20,
+      nestingFactor: 0.7,
+      gravity: fullscreen ? 0.28 : 0.38,
+      numIter: fullscreen ? 1400 : 900,
       randomize: false,
-    }),
-    [],
-  );
+    });
+  const getViewportConfig = (fullscreen: boolean) => ({
+    fitPadding: fullscreen ? 88 : 64,
+    panInset: fullscreen ? 48 : 26,
+  });
 
   useEffect(() => {
     if (!enableReplay) {
@@ -93,9 +106,16 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
     isFullscreenRef.current = isFullscreen;
   }, [isFullscreen]);
 
+  const clearPendingFit = () => {
+    if (fitGraphTimeoutRef.current) {
+      window.clearTimeout(fitGraphTimeoutRef.current);
+      fitGraphTimeoutRef.current = null;
+    }
+  };
+
   const handleRefocus = () => {
     if (cytoscapeRef.current) {
-      cytoscapeRef.current.fit(undefined, 50);
+      cytoscapeRef.current.fit(undefined, getViewportConfig(isFullscreenRef.current).fitPadding);
       clampViewportRef.current?.();
     }
   };
@@ -138,10 +158,15 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
   };
 
   const fitGraphSoon = () => {
-    window.setTimeout(() => {
-      if (cytoscapeRef.current) {
+    clearPendingFit();
+    fitGraphTimeoutRef.current = window.setTimeout(() => {
+      fitGraphTimeoutRef.current = null;
+      if (cytoscapeRef.current && !interactionStateRef.current.dragging) {
         cytoscapeRef.current.resize();
-        cytoscapeRef.current.fit(undefined, isFullscreenRef.current ? 90 : 50);
+        cytoscapeRef.current.fit(
+          undefined,
+          getViewportConfig(isFullscreenRef.current).fitPadding,
+        );
         clampViewportRef.current?.();
       }
     }, TRANSITION_MS + 20);
@@ -257,7 +282,7 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
       setPlaceholderHeight(null);
       if (cytoscapeRef.current) {
         cytoscapeRef.current.resize();
-        cytoscapeRef.current.fit(undefined, 50);
+        cytoscapeRef.current.fit(undefined, getViewportConfig(false).fitPadding);
         clampViewportRef.current?.();
       }
     }, TRANSITION_MS);
@@ -344,10 +369,10 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
     {
       selector: ".suspicious",
       style: {
-        "background-color": "#445978",
-        "border-color": "#22344f",
+        "background-color": "#c24141",
+        "border-color": "#7f1d1d",
         color: "#ffffff",
-        "text-outline-color": "#445978",
+        "text-outline-color": "#c24141",
         "text-outline-width": 2,
       },
     },
@@ -355,20 +380,21 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
       selector: ".cashout",
       style: {
         shape: "diamond",
-        "background-color": "#2e4665",
-        "border-color": "#17283d",
+        "background-color": "#b91c1c",
+        "border-color": "#7f1d1d",
         color: "#ffffff",
-        "text-outline-color": "#2e4665",
+        "text-outline-color": "#b91c1c",
         "text-outline-width": 2,
       },
     },
     {
       selector: "node.highlighted",
       style: {
+        "background-color": "#d9e4f2",
         "border-width": "4px",
-        "border-color": "#1d4ed8",
+        "border-color": "#ef4444",
         "overlay-opacity": 0,
-        "box-shadow": "0 0 16px rgba(29, 78, 216, 0.22)",
+        "box-shadow": "0 0 16px rgba(239, 68, 68, 0.26)",
       },
     },
     {
@@ -562,10 +588,10 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
     {
       selector: ".suspicious",
       style: {
-        "background-color": "#64748b",
-        "border-color": "#475569",
+        "background-color": "#b91c1c",
+        "border-color": "#7f1d1d",
         color: "#f8fafc",
-        "text-outline-color": "#64748b",
+        "text-outline-color": "#b91c1c",
         "text-outline-width": 2,
       },
     },
@@ -573,20 +599,21 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
       selector: ".cashout",
       style: {
         shape: "diamond",
-        "background-color": "#475569",
-        "border-color": "#334155",
+        "background-color": "#991b1b",
+        "border-color": "#7f1d1d",
         color: "#f8fafc",
-        "text-outline-color": "#475569",
+        "text-outline-color": "#991b1b",
         "text-outline-width": 2,
       },
     },
     {
       selector: "node.highlighted",
       style: {
+        "background-color": "#334155",
         "border-width": "4px",
-        "border-color": "#64748b",
+        "border-color": "#ef4444",
         "overlay-opacity": 0,
-        "box-shadow": "0 0 12px rgba(100, 163, 184, 0.6)",
+        "box-shadow": "0 0 12px rgba(239, 68, 68, 0.45)",
       },
     },
     {
@@ -711,10 +738,13 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
     const instance = cytoscape({
       container: containerRef.current,
       elements: [...graph.nodes, ...graph.edges],
-      minZoom: 0.45,
+      minZoom: 0.3,
       maxZoom: 2.2,
-      layout: layoutOptions,
       style: styles as any,
+      userPanningEnabled: true,
+      panningEnabled: true,
+      boxSelectionEnabled: false,
+      selectionType: "single",
     });
 
     cytoscapeRef.current = instance;
@@ -834,7 +864,7 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
         return;
       }
 
-      const padding = isFullscreenRef.current ? 72 : 40;
+      const { panInset } = getViewportConfig(isFullscreenRef.current);
       const viewportWidth = container.clientWidth;
       const viewportHeight = container.clientHeight;
       const renderedBounds = instance.elements().renderedBoundingBox({
@@ -846,35 +876,19 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
         return;
       }
 
-      const usableWidth = Math.max(viewportWidth - padding * 2, 0);
-      const usableHeight = Math.max(viewportHeight - padding * 2, 0);
       const pan = instance.pan();
       let nextPanX = pan.x;
       let nextPanY = pan.y;
+      const minX1 = Math.min(panInset, viewportWidth - panInset - renderedBounds.w);
+      const maxX1 = Math.max(panInset, viewportWidth - panInset - renderedBounds.w);
+      const minY1 = Math.min(panInset, viewportHeight - panInset - renderedBounds.h);
+      const maxY1 = Math.max(panInset, viewportHeight - panInset - renderedBounds.h);
 
-      if (renderedBounds.w <= usableWidth) {
-        const graphCenterX = renderedBounds.x1 + renderedBounds.w / 2;
-        nextPanX += viewportWidth / 2 - graphCenterX;
-      } else {
-        if (renderedBounds.x1 > padding) {
-          nextPanX -= renderedBounds.x1 - padding;
-        }
-        if (renderedBounds.x2 < viewportWidth - padding) {
-          nextPanX += viewportWidth - padding - renderedBounds.x2;
-        }
-      }
+      const targetX1 = clampNumber(renderedBounds.x1, minX1, maxX1);
+      const targetY1 = clampNumber(renderedBounds.y1, minY1, maxY1);
 
-      if (renderedBounds.h <= usableHeight) {
-        const graphCenterY = renderedBounds.y1 + renderedBounds.h / 2;
-        nextPanY += viewportHeight / 2 - graphCenterY;
-      } else {
-        if (renderedBounds.y1 > padding) {
-          nextPanY -= renderedBounds.y1 - padding;
-        }
-        if (renderedBounds.y2 < viewportHeight - padding) {
-          nextPanY += viewportHeight - padding - renderedBounds.y2;
-        }
-      }
+      nextPanX += targetX1 - renderedBounds.x1;
+      nextPanY += targetY1 - renderedBounds.y1;
 
       const deltaX = nextPanX - pan.x;
       const deltaY = nextPanY - pan.y;
@@ -888,11 +902,86 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
       }
     };
 
-    clampViewportRef.current = clampToViewport;
-    instance.on("pan", () => {
-      if (isFullscreenRef.current) {
+    const stopActiveLayout = () => {
+      const activeLayout = activeLayoutRef.current;
+      if (activeLayout?.stop) {
+        activeLayout.stop();
+      }
+      activeLayoutRef.current = null;
+    };
+
+    const runGraphLayout = ({ refit = true }: { refit?: boolean } = {}) => {
+      if (instance.destroyed() || interactionStateRef.current.dragging) {
+        return;
+      }
+
+      stopActiveLayout();
+      const layout = instance.layout(getLayoutOptions(isFullscreenRef.current));
+      activeLayoutRef.current = layout;
+      layout.run();
+      activeLayoutRef.current = null;
+
+      if (refit) {
+        instance.resize();
+        instance.fit(undefined, getViewportConfig(isFullscreenRef.current).fitPadding);
         clampToViewport();
       }
+    };
+
+    const setTextSelectionEnabled = (enabled: boolean) => {
+      const value = enabled ? "" : "none";
+      document.documentElement.style.userSelect = value;
+      (document.documentElement.style as CSSStyleDeclaration & { webkitUserSelect?: string }).webkitUserSelect = value;
+    };
+
+    const onContainerPointerDown = (event: PointerEvent) => {
+      interactionStateRef.current.pointerDown = true;
+      interactionStateRef.current.dragging = false;
+      interactionStateRef.current.startX = event.clientX;
+      interactionStateRef.current.startY = event.clientY;
+    };
+
+    const onWindowPointerMove = (event: PointerEvent) => {
+      if (!interactionStateRef.current.pointerDown || interactionStateRef.current.dragging) {
+        return;
+      }
+
+      const movedX = Math.abs(event.clientX - interactionStateRef.current.startX);
+      const movedY = Math.abs(event.clientY - interactionStateRef.current.startY);
+      if (movedX < 5 && movedY < 5) {
+        return;
+      }
+
+      interactionStateRef.current.dragging = true;
+      clearPendingFit();
+      stopActiveLayout();
+      setTextSelectionEnabled(false);
+      setIsDraggingGraph(true);
+    };
+
+    const onWindowPointerUp = () => {
+      if (!interactionStateRef.current.pointerDown) {
+        return;
+      }
+
+      interactionStateRef.current.pointerDown = false;
+      const wasDragging = interactionStateRef.current.dragging;
+      interactionStateRef.current.dragging = false;
+
+      if (wasDragging) {
+        setTextSelectionEnabled(true);
+        setIsDraggingGraph(false);
+        requestAnimationFrame(() => {
+          clampToViewport();
+          syncHoveredEdge();
+        });
+      }
+    };
+
+    clampViewportRef.current = clampToViewport;
+    runGraphLayoutRef.current = runGraphLayout;
+    instance.on("pan", () => {
+      clampToViewport();
       syncHoveredEdge();
     });
 
@@ -900,15 +989,28 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
       clampToViewport();
       syncHoveredEdge();
     });
+    containerRef.current.addEventListener("pointerdown", onContainerPointerDown);
+    window.addEventListener("pointermove", onWindowPointerMove, { passive: true });
+    window.addEventListener("pointerup", onWindowPointerUp);
+    window.addEventListener("pointercancel", onWindowPointerUp);
     requestAnimationFrame(() => {
-      clampToViewport();
+      runGraphLayout();
       syncHoveredEdge();
     });
 
     return () => {
+      clearPendingFit();
+      stopActiveLayout();
+      setTextSelectionEnabled(true);
       clampViewportRef.current = null;
+      runGraphLayoutRef.current = null;
       hoveredEdgeIdRef.current = null;
       isClampingRef.current = false;
+      setIsDraggingGraph(false);
+      window.removeEventListener("pointermove", onWindowPointerMove);
+      window.removeEventListener("pointerup", onWindowPointerUp);
+      window.removeEventListener("pointercancel", onWindowPointerUp);
+      containerRef.current?.removeEventListener("pointerdown", onContainerPointerDown);
       setSelection(null);
       setHoveredEdge(null);
       cytoscapeRef.current = null;
@@ -916,11 +1018,11 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
         instance.destroy();
       }
     };
-  }, [layoutOptions, resolvedTheme]);
+  }, [resolvedTheme]);
 
   useEffect(() => {
     const instance = cytoscapeRef.current;
-    if (!instance || instance.destroyed()) {
+    if (!instance || instance.destroyed() || interactionStateRef.current.dragging) {
       return;
     }
 
@@ -929,11 +1031,8 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
       instance.add([...graph.nodes, ...graph.edges]);
     });
 
-    instance.layout(layoutOptions).run();
-    instance.resize();
-    instance.fit(undefined, isFullscreenRef.current ? 90 : 50);
-    clampViewportRef.current?.();
-  }, [graph, layoutOptions]);
+    runGraphLayoutRef.current?.({ refit: true });
+  }, [graph]);
 
   useEffect(() => {
     const instance = cytoscapeRef.current;
@@ -946,9 +1045,18 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
     style.fromJson(styles as any);
     style.update();
     instance.resize();
-    instance.fit(undefined, isFullscreenRef.current ? 90 : 50);
-    clampViewportRef.current?.();
+    if (!interactionStateRef.current.dragging) {
+      clampViewportRef.current?.();
+    }
   }, [isFullscreen, resolvedTheme]);
+
+  useEffect(() => {
+    if (interactionStateRef.current.dragging) {
+      return;
+    }
+
+    runGraphLayoutRef.current?.({ refit: true });
+  }, [isFullscreen]);
 
   useEffect(() => {
     const instance = cytoscapeRef.current;
@@ -1006,6 +1114,7 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
       if (replayResizeRafRef.current) {
         window.cancelAnimationFrame(replayResizeRafRef.current);
       }
+      clearPendingFit();
     };
   }, []);
 
@@ -1049,7 +1158,7 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
       <div
         ref={wrapperRef}
         style={isFullscreen ? overlayStyle ?? undefined : undefined}
-        className={`relative overflow-hidden transition-[top,left,width,height,border-radius,box-shadow,border-color,background-color] duration-300 ease-out ${
+        className={`relative overflow-hidden select-none transition-[top,left,width,height,border-radius,box-shadow,border-color,background-color] duration-300 ease-out ${
           isFullscreen
             ? "z-[60] rounded-[28px] border-transparent bg-transparent shadow-none"
             : ""
@@ -1061,10 +1170,15 @@ export function CytoscapeGraph({ graph, enableReplay = false }: CytoscapeGraphPr
             resolvedTheme === "dark"
               ? "bg-[radial-gradient(circle_at_top,_rgba(15,23,42,0.2),_rgba(2,6,23,0.75))]"
               : "bg-[radial-gradient(circle_at_top,_#f8fbff,_#e6edf6_62%,_#dce6f1)]"
-          } ${isFullscreen ? "h-full min-h-[calc(100vh-2rem)]" : "h-[520px]"}`}
+          } ${isFullscreen ? "h-full min-h-[calc(100vh-2rem)]" : "h-[520px]"} ${
+            isDraggingGraph ? "cursor-grabbing" : "cursor-grab"
+          }`}
         />
         {enableReplay ? (
-          <div className="absolute top-4 left-4 z-20 max-w-[min(calc(100%-6rem),42rem)]">
+          <div
+            data-graph-overlay
+            className="absolute top-4 left-4 z-20 max-w-[min(calc(100%-6rem),42rem)] select-none"
+          >
             <div
               className={`group inline-flex items-center gap-3 rounded-full border border-line/80 bg-canvas/88 px-4 py-3 text-left shadow-frame backdrop-blur transition-all duration-300 hover:-translate-y-0.5 hover:bg-canvas ${
                 isReplayPanelOpen ? "pointer-events-none opacity-0 scale-95" : "opacity-100 scale-100"

@@ -58,6 +58,19 @@ def test_live_monitor_stream_advances_latest_transaction():
     assert next_payload.transactions[0].transaction_id != initial_payload.transactions[0].transaction_id
 
 
+def test_persist_snapshot_from_transactions_updates_latest_snapshot():
+    live_service = LiveMonitorService()
+    live_service.bootstrap()
+    transactions = live_service.engine.recent_transactions(12)[-6:]
+
+    persisted = live_service.persist_snapshot_from_transactions(transactions)
+    current_snapshot = live_service.current_snapshot()
+
+    assert persisted.payload.generated_at == transactions[-1]["timestamp"]
+    assert current_snapshot is persisted
+    assert current_snapshot.payload.active_scenario is None
+
+
 def test_incident_queue_is_repeatable_and_non_empty():
     incident_service = IncidentService()
     queue = incident_service.get_queue()

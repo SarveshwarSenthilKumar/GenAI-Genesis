@@ -126,13 +126,32 @@ export async function postUploadLive(
   transactionsFile: File,
   accountsFile?: File,
 ): Promise<LiveMonitorPayload> {
+  return postUploadPayload("/api/uploads/transactions/live", transactionsFile, accountsFile);
+}
+
+export async function postUploadDashboard(
+  transactionsFile: File,
+  accountsFile?: File,
+): Promise<LiveMonitorPayload> {
+  return postUploadPayload(
+    "/api/uploads/transactions/dashboard",
+    transactionsFile,
+    accountsFile,
+  );
+}
+
+async function postUploadPayload(
+  path: string,
+  transactionsFile: File,
+  accountsFile?: File,
+): Promise<LiveMonitorPayload> {
   const formData = new FormData();
   formData.append("transactions", transactionsFile);
   if (accountsFile) {
     formData.append("accounts", accountsFile);
   }
 
-  const response = await fetch(`${API_BASE_URL}/api/uploads/transactions/live`, {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
     method: "POST",
     body: formData,
   });
