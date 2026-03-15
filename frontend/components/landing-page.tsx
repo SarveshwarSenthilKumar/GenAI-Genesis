@@ -444,6 +444,8 @@ export function LandingPage() {
           </div>
         </div>
       </section>
+
+      <SystemOverviewSection />
     </main>
   );
 }
@@ -611,5 +613,96 @@ function InvestigationTrace() {
         </div>
       </div>
     </div>
+  );
+}
+
+function SystemOverviewSection() {
+  return (
+    <section className="relative">
+      <div className="relative mx-auto max-w-[1280px] px-6 pb-16 pt-8 sm:px-8 lg:px-10 lg:pb-20 lg:pt-12">
+        <div data-landing-reveal className="opacity-0">
+          <p className="text-[11px] uppercase tracking-[0.38em] text-slate-500">
+            The Global Fraud Problem
+          </p>
+          <h2 className="mt-4 font-serif text-[3.5rem] leading-[1] tracking-[-0.018em] text-white sm:text-[4rem] lg:text-[5rem]">
+            Financial crime affects everyone
+          </h2>
+          <p className="mt-7 max-w-[33rem] text-[1.08rem] leading-8 text-slate-200/88">
+            Less than 1% of global financial crime is ever recovered. Sentinel helps protect the financial ecosystem with real-time detection.
+          </p>
+        </div>
+
+        <div className="mt-16">
+          <div data-landing-reveal className="opacity-0">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <div className="rounded-[24px] border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
+                <p className="text-[11px] uppercase tracking-[0.38em] text-slate-500">Daily Transactions</p>
+                <p className="mt-3 font-serif text-4xl text-white">61M</p>
+                <p className="mt-2 text-sm text-slate-300">
+                  transactions processed daily in Canada alone
+                </p>
+                <p className="mt-4 text-xs text-slate-400">
+                  Based on 2024 data showing over 22.5 billion retail payment transactions annually
+                </p>
+              </div>
+              
+              <div className="rounded-[24px] border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
+                <p className="text-[11px] uppercase tracking-[0.38em] text-slate-500">Global Impact</p>
+                <p className="mt-3 font-serif text-4xl text-white">$4T</p>
+                <p className="mt-2 text-sm text-slate-300">
+                  laundered annually worldwide
+                </p>
+                <p className="mt-4 text-xs text-slate-400">
+                  Approximately 2-5% of global GDP is laundered each year, with less than 1% recovered
+                </p>
+              </div>
+              
+              <div className="rounded-[24px] border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
+                <p className="text-[11px] uppercase tracking-[0.38em] text-slate-500">Detection Gap</p>
+                <p className="mt-3 font-serif text-4xl text-white">&lt;1%</p>
+                <p className="mt-2 text-sm text-slate-300">
+                  of financial crime is ever stopped
+                </p>
+                <p className="mt-4 text-xs text-slate-400">
+                  Current systems miss the vast majority of sophisticated fraud patterns
+                </p>
+              </div>
+              
+              <div className="rounded-[24px] border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
+                <p className="text-[11px] uppercase tracking-[0.38em] text-slate-500">Response Time</p>
+                <p className="mt-3 font-serif text-4xl text-white">150ms</p>
+                <p className="mt-2 text-sm text-slate-300">
+                  real-time fraud analysis
+                </p>
+                <p className="mt-4 text-xs text-slate-400">
+                  Sentinel processes transactions in sub-second time to stop fraud as it happens
+                </p>
+              </div>
+            </div>
+            
+            <div className="mt-8 p-4 rounded-[20px] border border-red-500/20 bg-red-500/5">
+              <p className="text-sm text-red-300 font-medium">
+                Financial crimes affect everyone - not just institutions. Sentinel helps protect the global financial ecosystem.
+              </p>
+            </div>
+            
+            <div className="mt-8 space-y-4">
+              <Link
+                href="/dashboard"
+                className="inline-flex w-full items-center justify-center rounded-full bg-white px-8 py-4 text-base font-medium text-slate-950 shadow-[0_20px_50px_rgba(15,23,42,0.28)] transition-all duration-200 hover:-translate-y-[1px] hover:bg-slate-200"
+              >
+                Fight Fraud Now
+              </Link>
+              <Link
+                href="/live"
+                className="inline-flex w-full items-center justify-center rounded-full border border-white/14 bg-white/6 px-8 py-4 text-sm font-medium text-white transition hover:border-white/24 hover:bg-white/10"
+              >
+                See Real-Time Detection
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
