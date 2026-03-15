@@ -106,7 +106,7 @@ Useful scripts:
 FRONTEND_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 OPENAI_API_KEY=
 OPENAI_MODEL=gpt-4o-mini
-OPENAI_BASE_URL=https://vjioo4r1vyvcozuj.us-east-2.aws.endpoints.huggingface.cloud/v1
+OPENAI_BASE_URL=https://qyt7893blb71b5d3.us-east-2.aws.endpoints.huggingface.cloud/v1
 OPENAI_TIMEOUT_SECONDS=8
 ```
 

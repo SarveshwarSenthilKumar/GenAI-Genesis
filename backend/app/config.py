@@ -51,5 +51,5 @@ OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 OPENAI_TIMEOUT_SECONDS = float(os.getenv("OPENAI_TIMEOUT_SECONDS", "8"))
 OPENAI_BASE_URL = os.getenv(
     "OPENAI_BASE_URL",
-    "https://vjioo4r1vyvcozuj.us-east-2.aws.endpoints.huggingface.cloud/v1",
+    "https://qyt7893blb71b5d3.us-east-2.aws.endpoints.huggingface.cloud/v1",
 )
